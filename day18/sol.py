@@ -28,7 +28,7 @@ def last_recovered_sound(instructions):
 ##                registers[instr[1]] = last_sound
                 return last_sound
         elif instr[0] == "jgz":
-            if registers[instr[1]] > 0:
+            if get(instr[1]) > 0:
                 bz += get(instr[2])
                 continue
         bz += 1
