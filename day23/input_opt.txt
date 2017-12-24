@@ -1,0 +1,26 @@
+set b 105700
+set c 122700
+set f 1 <-- label6
+set d 2
+set e 2 <-- label3
+set g d <-- label2
+mul g e
+sub g b
+jnz g 2  label1
+set f 0
+sub e -1  <-- label1
+set g e
+sub g b
+jnz g -8 label2
+sub d -1
+set g d
+sub g b
+jnz g -13 label3
+jnz f 2 label4
+sub h -1
+set g b <-- label4
+sub g c
+jnz g 2 label5
+halt
+sub b -17 <-- label5
+jnz 1 -23 label6
