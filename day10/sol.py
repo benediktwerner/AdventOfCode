@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+import re
 from collections import defaultdict
 
 
 class Vector:
-    def __init__(self, cords):
-        self.x, self.y = map(int, cords.split(","))
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
     def move(self, velocity):
         self.x += velocity.x
@@ -14,9 +16,9 @@ class Vector:
 
 class Light:
     def __init__(self, line):
-        position, velocity = line.split("> ")
-        self.pos = Vector(position.split("<")[1])
-        self.velocity = Vector(velocity.split("<")[1][:-1])
+        x, y, vx, vy = map(int, re.findall(r"-?\d+", line))
+        self.pos = Vector(x, y)
+        self.velocity = Vector(vx, vy)
 
     def move(self):
         self.pos.move(self.velocity)
@@ -24,7 +26,6 @@ class Light:
 
 def print_lights(lights):
     min_x, min_y, max_x, max_y = float("inf"), float("inf"), float("-inf"), float("-inf")
-    positions = defaultdict(bool)
 
     for light in lights:
         if light.pos.x < min_x:
@@ -35,15 +36,18 @@ def print_lights(lights):
             max_x = light.pos.x
         if light.pos.y > max_y:
             max_y = light.pos.y
-        positions[(light.pos.x, light.pos.y)] = True
 
-    if (max_x - min_x) > 100 or (max_y - min_y) > 10:
+    if (max_y - min_y) > 10:
         return False
+
+    positions = defaultdict(bool)
+    for light in lights:
+        positions[(light.pos.x, light.pos.y)] = True
 
     for y in range(min_y, max_y+1):
         line = ""
         for x in range(min_x, max_x+1):
-            line += "#" if positions[(x, y)] else "."
+            line += "#" if positions[(x, y)] else " "
         print(line)
 
     return True
@@ -54,7 +58,7 @@ def main():
 
     with open("input.txt") as f:
         for line in f:
-            lights.append(Light(line.strip()))
+            lights.append(Light(line))
 
     seconds = 0
 
@@ -65,7 +69,7 @@ def main():
         seconds += 1
 
         if print_lights(lights):
-            print("Part 2:", seconds)
+            print("\nPart 2:", seconds)
             break
 
 
