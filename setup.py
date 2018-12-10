@@ -35,6 +35,9 @@ except ValueError:
 
 dir_name = "day{:02}".format(day)
 os.makedirs(dir_name, exist_ok=True)
+print("Created directory", dir_name)
 
 with open(os.path.join(dir_name, "sol.py"), "w") as f:
     f.write(TEMPLATE)
+
+print("Created sol.py template")

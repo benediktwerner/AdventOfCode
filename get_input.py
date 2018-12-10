@@ -27,7 +27,11 @@ cookies = {}
 with open("cookie") as f:
     cookies["session"] = f.read().strip()
 
-with open(os.path.join(dir_name, "input.txt"), "w") as f:
+target_file = os.path.join(dir_name, "input.txt")
+
+with open(target_file, "w") as f:
     url = URL.format(year=YEAR, day=argv[1])
     req = requests.get(url, cookies=cookies)
     f.write(req.text)
+
+print("Input for", dir_name, "written to", target_file)
