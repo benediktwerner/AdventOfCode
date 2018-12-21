@@ -8,8 +8,8 @@ FUNCTIONS = {
     "addi": lambda r, a, b: r[a]+b,
     "mulr": lambda r, a, b: r[a]*r[b],
     "muli": lambda r, a, b: r[a]*b,
-    "bandr": lambda r, a, b: r[a] & r[b],
-    "bandi": lambda r, a, b: r[a] & b,
+    "banr": lambda r, a, b: r[a] & r[b],
+    "bani": lambda r, a, b: r[a] & b,
     "borr": lambda r, a, b: r[a] | r[b],
     "bori": lambda r, a, b: r[a] | b,
     "setr": lambda r, a, b: r[a],
@@ -23,34 +23,33 @@ FUNCTIONS = {
 }
 
 
-def simulate(program, bind, r, break_on=None):
-    i = 0
-    while 0 <= i < len(program):
-        if i == break_on:
+def simulate(program, ip_reg, r, break_on=None):
+    ip = 0
+    while 0 <= ip < len(program):
+        if ip == break_on:
             break
-        instr, a, b, c = program[i]
-        r[bind] = i
+        instr, a, b, c = program[ip]
+        r[ip_reg] = ip
         r[c] = FUNCTIONS[instr](r, a, b)
-        i = r[bind]
-        i += 1
+        ip = r[ip_reg] + 1
     return r
 
 
 def main():
-    bind = 0
+    ip_reg = 0
     program = []
     with open("input.txt") as f:
         for line in f:
             if line[0] == "#":
-                bind = int(line.strip().split(" ")[1])
+                ip_reg = int(line.strip().split(" ")[1])
             else:
-                i, a, b, c = line.strip().split(" ")
-                program.append((i, int(a), int(b), int(c)))
+                instr, a, b, c = line.strip().split(" ")
+                program.append((instr, int(a), int(b), int(c)))
 
-    r = simulate(program, bind, [0]*6)
+    r = simulate(program, ip_reg, [0]*6)
     print("Part 1:", r[0])
 
-    r = simulate(program, bind, [1] + [0]*5, break_on=1)
+    r = simulate(program, ip_reg, [1] + [0]*5, break_on=1)
     number = max(r)
     total = 0
 
