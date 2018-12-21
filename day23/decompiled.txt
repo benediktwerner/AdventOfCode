@@ -1,0 +1,27 @@
+b = 105700
+c = 122700
+g = 1
+
+while g != 0:
+	f = 1
+	d = 2
+	
+	while g != 0:
+		e = 2
+		while g != 0:
+			g = d
+			g *= e
+			g -= b
+			if g == 0:
+				f = 0
+			e++
+			g = e
+			g -= b
+		d++
+		g = d
+		g -= b
+
+	if f == 0:
+		h++
+	g = b - c
+	b += 17
