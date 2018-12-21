@@ -1,3 +1,3 @@
-Advent of Code 2017
+Advent of Code
 ===================
-My solutions for the [Advent of Code 2017](http://adventofcode.com/2017) written in Python 3
+My solutions for [Advent of Code](http://adventofcode.com) written in Python 3
