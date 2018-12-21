@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+from datetime import datetime
 from sys import argv
 
 
@@ -21,19 +22,30 @@ if __name__ == "__main__":
 """
 
 
-if len(argv) != 2:
-    print("Usage:", argv[0], "DAY")
-    exit(1)
-
-try:
-    day = int(argv[1])
-except ValueError:
-    print("Error: DAY is not a number")
-    print("Usage:", argv[0], "DAY")
+def print_usage():
+    print("Usage:", argv[0], "[YEAR] DAY")
     exit(1)
 
 
-dir_name = "day{:02}".format(day)
+def arg_to_int(i, name):
+    try:
+        return int(argv[i])
+    except ValueError:
+        print("Error:", name, "is not a number")
+        print_usage()
+
+
+if len(argv) == 2:
+    year = datetime.now().year
+    day = arg_to_int(1, "DAY")
+elif len(argv) == 3:
+    year = arg_to_int(1, "YEAR")
+    day = arg_to_int(2, "DAY")
+else:
+    print_usage()
+
+
+dir_name = "{}/day{:02}".format(year, day)
 os.makedirs(dir_name, exist_ok=True)
 print("Created directory", dir_name)
 
