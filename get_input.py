@@ -47,8 +47,13 @@ else:
 dir_name = "{}/day{:02}".format(year, day)
 cookies = {}
 
-with open("cookie") as f:
-    cookies["session"] = f.read().strip()
+try:
+    with open("cookie") as f:
+        cookies["session"] = f.read().strip()
+except FileNotFoundError:
+    print("No cookie file found.")
+    print("Please paste the value of the 'session' cookie on the AoC website into a file named 'cookie'.")
+    exit(2)
 
 target_file = os.path.join(dir_name, "input.txt")
 
