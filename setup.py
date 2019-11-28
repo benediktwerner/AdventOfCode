@@ -9,12 +9,13 @@ TEMPLATE = """\
 #!/usr/bin/env python3
 
 from collections import *
+from networkx import *
 
 
 def main():
     with open("input.txt") as f:
         for line in f:
-            pass
+            line = line.strip()
 
 
 if __name__ == "__main__":
