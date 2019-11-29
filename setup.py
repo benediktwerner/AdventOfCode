@@ -10,6 +10,11 @@ TEMPLATE = """\
 
 from collections import *
 from networkx import *
+import re
+
+
+def ints(s):
+    return list(map(int, re.findall(r"-?\d+", s)))
 
 
 def main():
