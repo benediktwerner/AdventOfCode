@@ -14,8 +14,9 @@ from networkx import *
 
 def main():
     with open(__file__.rstrip("sol.py") + "input.txt") as f:
-        for line in f:
-            line = line.strip()
+        lines = f.read().splitlines()
+        for line in lines:
+            pass
 
 
 if __name__ == "__main__":
