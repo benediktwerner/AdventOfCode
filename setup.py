@@ -19,7 +19,7 @@ def ints(s):
 
 def main():
     with open(__file__.rstrip("sol.py") + "input.txt") as f:
-        lines = f.read().splitlines()
+        lines = f.read().strip().splitlines()
         for line in lines:
             pass
 
