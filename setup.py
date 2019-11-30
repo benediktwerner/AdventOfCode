@@ -12,15 +12,10 @@ from collections import *
 from networkx import *
 
 
-def main():
-    with open(__file__.rstrip("sol.py") + "input.txt") as f:
-        lines = f.read().strip().splitlines()
-        for line in lines:
-            pass
+with open(__file__.rstrip("sol.py") + "input.txt") as f:
+    for line in f:
+        line = line.strip()
 
-
-if __name__ == "__main__":
-    main()
 """
 
 
