@@ -55,6 +55,7 @@ except FileNotFoundError:
     print("Please paste the value of the 'session' cookie on the AoC website into a file named 'cookie'.")
     exit(2)
 
+os.makedirs(dir_name, exist_ok=True)
 target_file = os.path.join(dir_name, "input.txt")
 
 with open(target_file, "w") as f:
