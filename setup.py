@@ -32,9 +32,21 @@ def arg_to_int(i, name):
         print_usage()
 
 
-if len(argv) == 2:
-    year = datetime.now().year
+if len(argv) == 1:
+    now = datetime.now()
+    if now.month != 12 or now.day > 25:
+        print("Failed to deduce day: There is no new AoC puzzle today!")
+        print_usage()
+    year = now.year
+    day = now.day
+elif "-h" in argv[1:] or "--help" in argv[1:]:
+    print_usage()
+elif len(argv) == 2:
     day = arg_to_int(1, "DAY")
+    now = datetime.now()
+    year = now.year
+    if now.month < 12:
+        year -= 1
 elif len(argv) == 3:
     year = arg_to_int(1, "YEAR")
     day = arg_to_int(2, "DAY")
