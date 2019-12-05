@@ -90,8 +90,8 @@ PREPROCESS_RULES = {
         ],
     ),
     "leq": ((READ, READ, WRITE), ["lt $0 $1 __tmp", "eq $0 $1 $2", "or __tmp $2 $2"]),
-    "gt": ((READ, READ, WRITE), ["leq $1 $0 $2"]),
-    "geq": ((READ, READ, WRITE), ["lt $1 $0 $2"]),
+    "gt": ((READ, READ, WRITE), ["lt $1 $0 $2"]),
+    "geq": ((READ, READ, WRITE), ["leq $1 $0 $2"]),
 }
 
 
