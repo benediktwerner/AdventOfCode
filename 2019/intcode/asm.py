@@ -99,6 +99,13 @@ def eprint(*args, **kwargs):
     print(*args, **kwargs, file=stderr)
 
 
+def warn(i, line, msg):
+    eprint(f"Warning at line {i}:", msg)
+    eprint(" " * 5, "|")
+    eprint(f"{i:5} |   ", line.strip())
+    eprint(" " * 5, "|")
+
+
 def error(i, line, msg):
     eprint(f"Error at line {i}:", msg)
     eprint(" " * 5, "|")
@@ -128,7 +135,9 @@ def __preprocess(i, line, pline):
     if parts[0] in PREPROCESS_RULES:
         rule = PREPROCESS_RULES[parts[0]]
         if len(parts[1:]) != len(rule[0]):
-            error(i, line, f"Macro expected {len(rule[0])} args but got {len(parts[1:])}")
+            error(
+                i, line, f"Macro expected {len(rule[0])} args but got {len(parts[1:])}"
+            )
         for sub in PREPROCESS_RULES[parts[0]][1]:
             for a in set(c for c in sub.split() if c[0] == "$"):
                 sub = sub.replace(a, parts[int(a[1:]) + 1])
@@ -151,6 +160,9 @@ elif not path.isfile(argv[1]):
 
 labels = {}
 patches = defaultdict(list)
+patch_lines = defaultdict(list)
+written_to = set()
+read_from = set()
 values = {}
 code = []
 has_hlt = False
@@ -160,7 +172,7 @@ with open(argv[1]) as f:
         if parts[0][-1] == ":":
             if len(parts) > 1:
                 error(i, line, "Unexpected input after label")
-            labels[parts[0][:-1]] = len(code)
+            labels[":" + parts[0][:-1]] = len(code)
         elif parts[0] in OPS:
             opcode, arg_kinds = OPS[parts[0]]
             mode = 0
@@ -177,7 +189,8 @@ with open(argv[1]) as f:
                 )
             for i, (arg, kind) in enumerate(zip(parts[1:], arg_kinds)):
                 if arg[0] == ":":
-                    patches[arg[1:]].append(len(code) + 1 + i)
+                    patches[arg].append(len(code) + 1 + i)
+                    patch_lines[arg].append((i, line))
                     mode += 10 ** (i + 2)
                 else:
                     try:
@@ -185,6 +198,11 @@ with open(argv[1]) as f:
                         mode += 10 ** (i + 2)
                     except ValueError:
                         patches[arg].append(len(code) + 1 + i)
+                        patch_lines[arg].append((i, line))
+                        if kind == READ:
+                            read_from.add(arg)
+                        else:
+                            written_to.add(arg)
                 args.append(arg)
             code.append(opcode + mode)
             code.extend(args)
@@ -200,10 +218,21 @@ with open(argv[1]) as f:
 
 
 for k, locs in patches.items():
+    if k[0] == ":" and k not in labels:
+        for i, line in patch_lines[k]:
+            error(i, line, f"Unknown label: {k[1:]}")
+
     val = labels.get(k, len(code))
     for loc in locs:
         code[loc] = val
+
     if k not in labels:
+        if k not in values and k not in written_to:
+            for i, line in patch_lines[k]:
+                warn(i, line, f"Variable {k} is never initialized explicitly")
+        elif k not in read_from:
+            for i, line in patch_lines[k]:
+                warn(i, line, f"Variable {k} is never read")
         code.append(values.get(k, 0))
 
 
