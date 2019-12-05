@@ -26,28 +26,31 @@ PREPROCESS_RULES = {
     "jfalse": ((READ, READ), ["jz $0 $1"]),
     "mov": ((READ, WRITE), ["add 0 $0 $1"]),
     "sub": ((READ, READ, WRITE), ["mul -1 $1 __tmp", "add $0 __tmp $2"]),
-    "div": (
+    "div": ((READ, READ, WRITE), ["divmod $0 $1 $2 __rest"]),
+    "mod": (
         (READ, READ, WRITE),
         [
-            "mov $0 __rest",
-            "mov 0 $2",
+            "mov $1 __div",
+            "mov $0 $2",
             "__loop$:",
-            "lt __rest $1 __tmp",
+            "lt $2 __div __tmp",
             "jtrue __tmp :__end$",
-            "sub __rest $1 __rest",
-            "add $2 1 $2",
+            "sub $2 __div $2",
             "jmp :__loop$",
             "__end$:",
         ],
     ),
-    "mod": (
-        (READ, READ, WRITE),
+    "divmod": (
+        (READ, READ, WRITE, WRITE),
         [
-            "mov $0 $2",
+            "mov $1 __div",
+            "mov $0 $3",
+            "mov 0 $2",
             "__loop$:",
-            "lt $2 $1 __tmp",
+            "lt $3 __div __tmp",
             "jtrue __tmp :__end$",
-            "sub $2 $1 $2",
+            "sub $3 __div $3",
+            "add $2 1 $2",
             "jmp :__loop$",
             "__end$:",
         ],
@@ -86,9 +89,9 @@ PREPROCESS_RULES = {
             "__end$:",
         ],
     ),
-    "leq": ((READ, READ, WRITE), ["le $0 $1 __tmp", "eq $0 $1 $2", "or __tmp $2 $2"]),
+    "leq": ((READ, READ, WRITE), ["lt $0 $1 __tmp", "eq $0 $1 $2", "or __tmp $2 $2"]),
     "gt": ((READ, READ, WRITE), ["leq $1 $0 $2"]),
-    "geq": ((READ, READ, WRITE), ["le $1 $0 $2"]),
+    "geq": ((READ, READ, WRITE), ["lt $1 $0 $2"]),
 }
 
 
@@ -112,27 +115,29 @@ def preprocess(f):
         if "#" in line:
             line = line[: line.find("#")]
 
-        for parts in __preprocess(line):
-            yield i, line, parts
+        yield from __preprocess(i, line, line)
 
 
-def __preprocess(line):
+def __preprocess(i, line, pline):
     global preprocess_tmp_suffix
 
-    parts = line.split()
+    parts = pline.split()
     if not parts:
         return
 
     if parts[0] in PREPROCESS_RULES:
+        rule = PREPROCESS_RULES[parts[0]]
+        if len(parts[1:]) != len(rule[0]):
+            error(i, line, f"Macro expected {len(rule[0])} args but got {len(parts[1:])}")
         for sub in PREPROCESS_RULES[parts[0]][1]:
             for a in set(c for c in sub.split() if c[0] == "$"):
                 sub = sub.replace(a, parts[int(a[1:]) + 1])
             if "$" in sub:
                 sub.replace("$", str(preprocess_tmp_suffix))
                 preprocess_tmp_suffix += 1
-            yield from __preprocess(sub)
+            yield from __preprocess(i, line, sub)
     else:
-        yield parts
+        yield i, line, parts
 
 
 if len(argv) != 2 or "-h" in argv[1:] or "--help" in argv[1:]:

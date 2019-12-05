@@ -29,25 +29,26 @@ total = 0
 
 ## Instructions
 
-|    Operation     |          Effect          |                          Note                          |
-| :--------------: | :----------------------: | :----------------------------------------------------: |
-|  `mov a target`  |       `target = a`       |                                                        |
-| `add a b target` |     `target = a + b`     |                                                        |
-| `sub a b target` |     `target = a - b`     |                                                        |
-| `mul a b target` |     `target = a * b`     |                                                        |
-| `div a b target` |    `target = a // b`     | Can be quite slow, only works for positive numbers atm |
-| `mod a b target` |     `target = a % b`     | Can be quite slow, only works for positive numbers atm |
-|   `in target`    |    `target = input()`    |                                                        |
-|     `out a`      |        `print(a)`        |                                                        |
-|   `jmp target`   |      `goto target`       |                                                        |
-|  `jnz a target`  | `if a != 0: goto target` |                     Alias: `jtrue`                     |
-|  `jz a target`   | `if a == 0: goto target` |                    Alias: `jfalse`                     |
-| `eq a b target`  |    `target = a == b`     |                                                        |
-| `lt a b target`  |     `target = a < b`     |                                                        |
-| `leq a b target` |    `target = a <= b`     |                                                        |
-| `gt a b target`  |     `target = a > b`     |                                                        |
-| `geq a b target` |    `target = a >= b`     |                                                        |
-| `and a b target` |    `target = a and b`    |                                                        |
-| `or a b target`  |    `target = a and b`    |                                                        |
-|  `not a target`  |     `target = not a`     |                                                        |
-|      `hlt`       |         `exit()`         |                     Alias: `halt`                      |
+|        Operation         |            Effect             |                          Note                          |
+| :----------------------: | :---------------------------: | :----------------------------------------------------: |
+|      `mov a target`      |         `target = a`          |                                                        |
+|     `add a b target`     |       `target = a + b`        |                                                        |
+|     `sub a b target`     |       `target = a - b`        |                                                        |
+|     `mul a b target`     |       `target = a * b`        |                                                        |
+|     `div a b target`     |       `target = a // b`       | Can be quite slow, only works for positive numbers atm.  |
+|     `mod a b target`     |       `target = a % b`        | Can be quite slow, only works for positive numbers atm |
+| `divmod a b target rest` | `target, rest = divmod(a, b)` | Can be quite slow, only works for positive numbers atm |
+|       `in target`        |      `target = input()`       |                                                        |
+|         `out a`          |          `print(a)`           |                                                        |
+|       `jmp target`       |         `goto target`         |                                                        |
+|      `jnz a target`      |   `if a != 0: goto target`    |                     Alias: `jtrue`                     |
+|      `jz a target`       |   `if a == 0: goto target`    |                    Alias: `jfalse`                     |
+|     `eq a b target`      |       `target = a == b`       |                                                        |
+|     `lt a b target`      |       `target = a < b`        |                                                        |
+|     `leq a b target`     |       `target = a <= b`       |                                                        |
+|     `gt a b target`      |       `target = a > b`        |                                                        |
+|     `geq a b target`     |       `target = a >= b`       |                                                        |
+|     `and a b target`     |      `target = a and b`       |                                                        |
+|     `or a b target`      |      `target = a and b`       |                                                        |
+|      `not a target`      |       `target = not a`        |                                                        |
+|          `hlt`           |           `exit()`            |                     Alias: `halt`                      |
