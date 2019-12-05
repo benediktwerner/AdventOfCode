@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
+import os
 from collections import defaultdict
+
 
 REG_NAMES = ("a", "b", "c", "d")
 
@@ -42,7 +44,7 @@ def run(instrs, **inits):
 
 
 def main():
-    with open(__file__.rstrip("sol.py") + "input.txt") as f:
+    with open(os.path.dirname(__file__) + "/input.txt") as f:
         instrs = [line.strip.split() for line in f]
 
         print("Part 1:", run(instrs))

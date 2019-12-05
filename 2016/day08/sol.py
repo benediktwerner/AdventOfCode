@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
+import os
+
+
 WIDTH = 50
 HEIGHT = 6
 
 
 def main():
-    with open(__file__.rstrip("sol.py") + "input.txt") as f:
+    with open(os.path.dirname(__file__) + "/input.txt") as f:
         screen = [[False] * WIDTH for _ in range(HEIGHT)]
 
         for line in f:

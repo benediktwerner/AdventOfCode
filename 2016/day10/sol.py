@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
+import os
 from networkx import DiGraph, topological_sort
 
 
 def main():
-    with open(__file__.rstrip("sol.py") + "input.txt") as f:
+    with open(os.path.dirname(__file__) + "/input.txt") as f:
         g = DiGraph()
 
         for line in f:

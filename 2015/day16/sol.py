@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+import os
+
 
 def main():
-    with open(__file__.rstrip("sol.py") + "input.txt") as f:
+    with open(os.path.dirname(__file__) + "/input.txt") as f:
         attrs = {
             "children": 3,
             "cats": 7,

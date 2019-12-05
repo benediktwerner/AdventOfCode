@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+import os
+
+
 DIRS = {"R": (1, 0), "L": (-1, 0), "U": (0, 1), "D": (0, -1)}
 
-with open(__file__.rstrip("sol.py") + "input.txt") as f:
+with open(os.path.dirname(__file__) + "/input.txt") as f:
     first_wire = [(c[0], int(c[1:])) for c in f.readline().strip().split(",")]
     second_wire = [(c[0], int(c[1:])) for c in f.readline().strip().split(",")]
 

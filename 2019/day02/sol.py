@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+
 
 def run_program(memory, noun, verb):
     ip = 0
@@ -20,7 +22,7 @@ def run_program(memory, noun, verb):
 
 
 def main():
-    with open(__file__.rstrip("sol.py") + "input.txt") as f:
+    with open(os.path.dirname(__file__) + "/input.txt") as f:
         memory = list(map(int, f.readline().strip().split(",")))
 
         print("Part 1:", run_program(memory, 12, 2))

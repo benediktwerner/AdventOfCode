@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import os
 
-with open(__file__.rstrip("sol.py") + "input.txt") as f:
+
+with open(os.path.dirname(__file__) + "/input.txt") as f:
     floor = 0
     first_basement = None
 
@@ -15,4 +17,3 @@ with open(__file__.rstrip("sol.py") + "input.txt") as f:
 
     print("Part 1:", floor)
     print("Part 2:", first_basement)
-

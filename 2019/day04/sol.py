@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import os
 
-with open(__file__.rstrip("sol.py") + "input.txt") as f:
+
+with open(os.path.dirname(__file__) + "/input.txt") as f:
     low, high = map(int, f.readline().strip().split("-"))
 
     count1 = 0

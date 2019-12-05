@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+
 
 def gen(line, length):
     while len(line) < length:
@@ -23,7 +25,7 @@ def checksum(line):
 
 
 def main():
-    with open(__file__.rstrip("sol.py") + "input.txt") as f:
+    with open(os.path.dirname(__file__) + "/input.txt") as f:
         start = f.readline().strip()
 
         print("Part 1:", checksum(gen(start, 272)))

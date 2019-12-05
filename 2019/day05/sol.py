@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import os
+
+
 POSITION = 0
 IMMEDIATE = 1
 
@@ -103,7 +106,7 @@ class VM:
         return out
 
 
-with open(__file__.rstrip("sol.py") + "input.txt") as f:
+with open(os.path.dirname(__file__) + "/input.txt") as f:
     code = list(map(int, f.readline().strip().split(",")))
 
     print("Part 1:", VM(code, 1).run())

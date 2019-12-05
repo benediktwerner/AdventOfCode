@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 from collections import defaultdict
 
 
@@ -29,7 +30,7 @@ def find_opt(m, names, curr=None):
 
 
 def main():
-    with open(__file__.rstrip("sol.py") + "input.txt") as f:
+    with open(os.path.dirname(__file__) + "/input.txt") as f:
         m = defaultdict(dict)
 
         for line in f:
