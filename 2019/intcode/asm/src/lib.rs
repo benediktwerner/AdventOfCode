@@ -415,8 +415,8 @@ impl<'a> Assembler<'a> {
             Ret => {
                 self.has_stack = true;
                 assemble!(self,
-                    [pop "__ret"],
-                    [jmp "__ret"],
+                    [pop "__ip"],
+                    [jmp "__ip"],
                 )
             }
 
