@@ -138,13 +138,17 @@ def __preprocess(i, line, pline):
             error(
                 i, line, f"Macro expected {len(rule[0])} args but got {len(parts[1:])}"
             )
+        increase_suffix = False
         for sub in PREPROCESS_RULES[parts[0]][1]:
             for a in set(c for c in sub.split() if c[0] == "$"):
                 sub = sub.replace(a, parts[int(a[1:]) + 1])
             if "$" in sub:
+                increase_suffix = True
                 sub.replace("$", str(preprocess_tmp_suffix))
-                preprocess_tmp_suffix += 1
             yield from __preprocess(i, line, sub)
+        if increase_suffix:
+            increase_suffix = False
+            preprocess_tmp_suffix += 1
     else:
         yield i, line, parts
 
