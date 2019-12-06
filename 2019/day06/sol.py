@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from networkx import DiGraph, dfs_postorder_nodes, shortest_path
+from networkx import DiGraph, dfs_postorder_nodes, shortest_path_length
 
 
 with open(os.path.dirname(__file__) + "/input.txt") as f:
@@ -26,7 +26,5 @@ with open(os.path.dirname(__file__) + "/input.txt") as f:
 
     print("Part 1:", total_orbits)
 
-    shortest_transfer = shortest_path(g.to_undirected(), "YOU", "SAN")
-    transfers = len(shortest_transfer) - 3
-
+    transfers = shortest_path_length(g.to_undirected(), "YOU", "SAN") - 2
     print("Part 2:", transfers)
