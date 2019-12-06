@@ -3,6 +3,10 @@
 This is my version of an intcode assembler. It supports all the opcodes from day 5
 and a number of additional high-level instructions.
 
+The assembler is in the `asm` directory and `vm` contains a reasonably fast
+intcode VM written in Rust. `asm.py` is an outdated version of the assembler
+that supports fewer features and `vm.py` is a much slower VM written in Python.
+
 ## Example
 
 This program computes Day 1 Part 1 in intcode:
