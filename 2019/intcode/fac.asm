@@ -14,4 +14,4 @@ end:
     out result
     hlt
 
-result = 1
+result: data 1
