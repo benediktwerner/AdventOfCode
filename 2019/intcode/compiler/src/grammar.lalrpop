@@ -1,0 +1,116 @@
+use crate::ast::{Ident, IdentEnv, Expr, UnOp, BinOp, Stmt, Function, Program};
+use crate::parser::{Line, unop, binop};
+
+grammar(env: &mut IdentEnv<'input>);
+
+
+pub Program: Program = Line* => {
+    let mut functions = Vec::new();
+    let mut stmts = Vec::new();
+    for line in <> {
+        match line {
+            Line::Func(func) => functions.push(func),
+            Line::Stmt(stmt) => stmts.push(stmt),
+        }
+    }
+    Program { functions, stmts }
+};
+
+Line: Line = {
+    Func => Line::Func(<>),
+    Stmt => Line::Stmt(<>),
+}
+
+Func: Function = "func" <name:Ident> "(" <args:Comma<Ident>> ")" <body:BlockStmt> => Function { name, args, body };
+
+Stmt: Stmt = {
+    SimpleStmt,
+    BlockStmt,
+    IfStmt,
+}
+SimpleStmt: Stmt = <InlineStmt> ";";
+InlineStmt: Stmt = {
+    DeclAssignStmt,
+    AssignStmt,
+    ReturnStmt,
+    ExprStmt,
+}
+DeclStmt: Stmt = "var" <Ident> => Stmt::Decl(<>);
+DeclAssignStmt: Stmt = "var" <name:Ident> "=" <expr:Expr> => Stmt::DeclAssign(name, expr);
+AssignStmt: Stmt = <name:Ident> "=" <expr:Expr> => Stmt::Assign(name, expr);
+ReturnStmt: Stmt = "return" <Expr?> => Stmt::Return(<>);
+ExprStmt: Stmt = Expr => Stmt::Expr(<>);
+BlockStmt: Stmt = "{" <Stmt*> "}" => Stmt::Block(<>);
+IfStmt: Stmt = "if" <expr:Expr> <if_body:BlockStmt> <else_body:("else" <Stmt>)?> => match else_body {
+    Some(body) => Stmt::IfElse(expr, Box::new(if_body), Box::new(body)),
+    None => Stmt::If(expr, Box::new(if_body)),
+};
+
+CmpOp: BinOp = {
+    "==" => BinOp::Equal,
+    "<" => BinOp::LessThan,
+    "<=" => BinOp::LessEqual,
+    ">" => BinOp::GreaterThan,
+    ">=" => BinOp::GreaterEqual,
+};
+AddOp: BinOp = {
+    "+" => BinOp::Add,
+    "-" => BinOp::Sub,
+};
+MulOp: BinOp = {
+    "*" => BinOp::Mul,
+    "/" => BinOp::Div,
+};
+
+Expr: Expr = {
+    <l:AndExpr> "or" <r:Expr> => binop(l, BinOp::Or, r),
+    AndExpr,
+};
+AndExpr: Expr = {
+    <l:NotExpr> "and" <r:AndExpr> => binop(l, BinOp::And, r),
+    NotExpr,
+};
+NotExpr: Expr = {
+    "not" <expr:NotExpr> => unop(UnOp::Not, expr),
+    CmpExpr,
+};
+CmpExpr: Expr = {
+    ArithExpr CmpOp CmpExpr => binop(<>),
+    ArithExpr,
+};
+ArithExpr: Expr = {
+    Term AddOp ArithExpr => binop(<>),
+    Term,
+};
+Term: Expr = {
+    Factor MulOp Term => binop(<>),
+    Factor,
+};
+Factor: Expr = {
+    "-" <Factor> => unop(UnOp::Neg, <>),
+    Ident => Expr::Var(<>),
+    Literal => Expr::Literal(<>),
+    "(" <Expr> ")",
+    <name:Ident> "(" <args:Comma<Expr>> ")" => Expr::Func(name, args),
+}
+
+Ident: Ident = r"[a-zA-Z_]\w*" => env.from_str(<>);
+
+Literal: i64 = {
+    "true" => 1,
+    "false" => 0,
+    Num,
+};
+
+Num: i64 = r"-?[0-9]+" => <>.parse().unwrap();
+
+Comma<T>: Vec<T> = {
+    <v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+};

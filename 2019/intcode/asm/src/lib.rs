@@ -12,83 +12,126 @@ const LESS_THAN: i64 = 7;
 const EQUAL: i64 = 8;
 const HALT: i64 = 99;
 
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub enum Param<'a> {
-    IdentPositional(&'a str),
-    IdentImmediate(&'a str),
-    #[doc(hidden)]
-    __IdentPositionalMacro(&'a str, u32),
-    #[doc(hidden)]
-    __IdentImmediateMacro(&'a str, u32),
-    Value(i64),
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub struct Ident(pub &'static str, pub u32);
+
+impl Ident {
+    pub fn to_imm(self) -> Param {
+        Param::IdentImmediate(self)
+    }
+    pub fn to_pos(self) -> Param {
+        Param::IdentPositional(self)
+    }
 }
 
-impl Param<'_> {
+impl std::fmt::Display for Ident {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if self.1 == 0 {
+            write!(f, "{}", self.0)
+        } else {
+            write!(f, "{}_{}", self.0, self.1)
+        }
+    }
+}
+
+impl From<&'static str> for Ident {
+    fn from(s: &'static str) -> Self {
+        Ident(s, 0)
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Param {
+    IdentPositional(Ident),
+    IdentImmediate(Ident),
+    ValuePositional(i64),
+    ValueImmediate(i64),
+}
+
+impl Param {
     fn macro_ident(name: &'static str, asm: &mut Assembler) -> Self {
         if &name[0..1] == ":" {
-            Self::__IdentImmediateMacro(&name[1..], asm.get_macro_id())
+            Self::IdentImmediate(Ident(&name[1..], asm.get_macro_id()))
         } else {
-            Self::__IdentPositionalMacro(name, asm.get_macro_id())
+            Self::IdentPositional(Ident(name, asm.get_macro_id()))
         }
     }
 }
 
-impl From<&'static str> for Param<'static> {
+impl std::fmt::Display for Param {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::IdentPositional(ident) => write!(f, "{}", ident),
+            Self::IdentImmediate(ident) => write!(f, ":{}", ident),
+            Self::ValuePositional(val) => write!(f, "[{}]", val),
+            Self::ValueImmediate(val) => write!(f, "{}", val),
+        }
+    }
+}
+
+impl From<&'static str> for Param {
     fn from(name: &'static str) -> Self {
         if &name[0..1] == ":" {
-            Self::IdentImmediate(&name[1..])
+            Self::IdentImmediate(Ident(&name[1..], 0))
         } else {
-            Self::IdentPositional(name)
+            Self::IdentPositional(Ident(name, 0))
         }
     }
 }
 
-impl From<i64> for Param<'static> {
+impl From<i64> for Param {
     fn from(x: i64) -> Self {
-        Self::Value(x)
+        Self::ValueImmediate(x)
+    }
+}
+
+impl From<&Param> for Param {
+    fn from(p: &Param) -> Self {
+        *p
     }
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum Stmt<'a> {
-    Label(&'a str),
-    #[doc(hidden)]
-    __LabelMacro(&'a str, u32),
-    Add(Param<'a>, Param<'a>, Param<'a>),
-    Mul(Param<'a>, Param<'a>, Param<'a>),
-    In(Param<'a>),
-    Out(Param<'a>),
-    JumpTrue(Param<'a>, Param<'a>),
-    JumpFalse(Param<'a>, Param<'a>),
-    LessThan(Param<'a>, Param<'a>, Param<'a>),
-    Equal(Param<'a>, Param<'a>, Param<'a>),
-    Data(Vec<Param<'a>>),
+pub enum Stmt {
+    Label(Ident),
+    Add(Param, Param, Param),
+    Mul(Param, Param, Param),
+    In(Param),
+    Out(Param),
+    JumpTrue(Param, Param),
+    JumpFalse(Param, Param),
+    LessThan(Param, Param, Param),
+    Equal(Param, Param, Param),
+    Data(Vec<Param>),
     DataArray(i64, usize),
     Halt,
 
-    Load(Param<'a>, Param<'a>),
-    Store(Param<'a>, Param<'a>),
+    Load(Param, Param),
+    Store(Param, Param),
+    LoadStack(Param, Param),
+    StoreStack(Param, Param),
 
-    Push(Param<'a>),
-    Pop(Param<'a>),
-    Call(Param<'a>),
+    AddStackPtr(Param),
+    Push(Param),
+    Pop(Param),
+    Call(Param),
     Ret,
 
-    Mov(Param<'a>, Param<'a>),
-    Sub(Param<'a>, Param<'a>, Param<'a>),
-    Div(Param<'a>, Param<'a>, Param<'a>),
-    Mod(Param<'a>, Param<'a>, Param<'a>),
-    DivMod(Param<'a>, Param<'a>, Param<'a>, Param<'a>),
-    Jmp(Param<'a>),
-    And(Param<'a>, Param<'a>, Param<'a>),
-    Or(Param<'a>, Param<'a>, Param<'a>),
-    Not(Param<'a>, Param<'a>),
-    LessEqual(Param<'a>, Param<'a>, Param<'a>),
-    GreaterThan(Param<'a>, Param<'a>, Param<'a>),
-    GreaterEqual(Param<'a>, Param<'a>, Param<'a>),
+    Mov(Param, Param),
+    Sub(Param, Param, Param),
+    Div(Param, Param, Param),
+    Mod(Param, Param, Param),
+    DivMod(Param, Param, Param, Param),
+    Jmp(Param),
+    And(Param, Param, Param),
+    Or(Param, Param, Param),
+    Not(Param, Param),
+    LessEqual(Param, Param, Param),
+    GreaterThan(Param, Param, Param),
+    GreaterEqual(Param, Param, Param),
 }
 
-impl Stmt<'_> {
+impl Stmt {
     fn opcode(&self) -> i64 {
         use Stmt::*;
         match self {
@@ -106,18 +149,67 @@ impl Stmt<'_> {
     }
 }
 
+impl std::fmt::Display for Stmt {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use Stmt::*;
+        match self {
+            Label(ident) => write!(f, "{}:", ident),
+            Data(vals) => {
+                write!(f, "data")?;
+                for val in vals {
+                    write!(f, " {}", val)?;
+                }
+                Ok(())
+            }
+            DataArray(a, b) => write!(f, "array {} {}", a, b),
+
+            Ret => write!(f, "ret"),
+            Halt => write!(f, "hlt"),
+
+            In(a) => write!(f, "in {}", a),
+            Out(a) => write!(f, "out {}", a),
+            AddStackPtr(a) => write!(f, "AddStackPtr {}", a),
+            Push(a) => write!(f, "push {}", a),
+            Pop(a) => write!(f, "pop {}", a),
+            Call(a) => write!(f, "call {}", a),
+            Jmp(a) => write!(f, "jmp {}", a),
+
+            Not(a, b) => write!(f, "not {} {}", a, b),
+            JumpTrue(a, b) => write!(f, "jmp_true {} {}", a, b),
+            JumpFalse(a, b) => write!(f, "jmp_false {} {}", a, b),
+            Mov(a, b) => write!(f, "mov {} {}", a, b),
+            Load(a, b) => write!(f, "load {} {}", a, b),
+            Store(a, b) => write!(f, "store {} {}", a, b),
+            LoadStack(a, b) => write!(f, "loads {} {}", a, b),
+            StoreStack(a, b) => write!(f, "stores {} {}", a, b),
+
+            Add(a, b, c) => write!(f, "add {} {} {}", a, b, c),
+            Mul(a, b, c) => write!(f, "mul {} {} {}", a, b, c),
+            Sub(a, b, c) => write!(f, "sub {} {} {}", a, b, c),
+            Div(a, b, c) => write!(f, "div {} {} {}", a, b, c),
+            Mod(a, b, c) => write!(f, "mod {} {} {}", a, b, c),
+            Equal(a, b, c) => write!(f, "eq {} {} {}", a, b, c),
+            LessThan(a, b, c) => write!(f, "lt {} {} {}", a, b, c),
+            LessEqual(a, b, c) => write!(f, "leq {} {} {}", a, b, c),
+            GreaterThan(a, b, c) => write!(f, "gt {} {} {}", a, b, c),
+            GreaterEqual(a, b, c) => write!(f, "geq {} {} {}", a, b, c),
+            And(a, b, c) => write!(f, "and {} {} {}", a, b, c),
+            Or(a, b, c) => write!(f, "or {} {} {}", a, b, c),
+
+            DivMod(a, b, c, d) => write!(f, "divmod {} {} {} {}", a, b, c, d),
+        }
+    }
+}
+
 macro_rules! param {
-    ($l:literal) => {
-        Param::from($l)
+    ((ref $e:expr)) => {
+        Param::ValuePositional($e)
     };
     (($self:ident $l:literal)) => {
         Param::macro_ident($l, $self)
     };
-    ((- $l:literal)) => {
-        Param::from(-$l)
-    };
     ($e:expr) => {
-        *$e
+        Param::from($e)
     };
 }
 
@@ -138,10 +230,10 @@ macro_rules! assemble {
 
 macro_rules! stmt {
     (label $n:literal) => {
-        Stmt::Label($n)
+        Stmt::Label(Ident($n, 0))
     };
     (label $self:ident $n:literal) => {
-        Stmt::__LabelMacro($n, $self.get_macro_id())
+        Stmt::Label(Ident($n, $self.get_macro_id()))
     };
 
     (add $a:tt $b:tt $c:tt) => {
@@ -240,10 +332,10 @@ macro_rules! stmt {
 }
 
 #[derive(Default)]
-struct Assembler<'a> {
+struct Assembler {
     code: Vec<i64>,
-    labels: HashMap<(&'a str, u32), usize>,
-    patches: HashMap<(&'a str, u32), Vec<usize>>,
+    labels: HashMap<Ident, usize>,
+    patches: HashMap<Ident, Vec<usize>>,
     macro_counter: u32,
     increase_macro_counter: bool,
     has_halt: bool,
@@ -251,8 +343,8 @@ struct Assembler<'a> {
     stack_size: usize,
 }
 
-impl<'a> Assembler<'a> {
-    fn assemble(mut self, stmts: &[Stmt<'a>]) -> Vec<i64> {
+impl Assembler {
+    fn assemble(mut self, stmts: &[Stmt]) -> Vec<i64> {
         self.assemble_stmts(stmts);
 
         if self.has_stack {
@@ -289,23 +381,17 @@ impl<'a> Assembler<'a> {
         self.code
     }
 
-    fn assemble_stmts(&mut self, stmts: &[Stmt<'a>]) {
+    fn assemble_stmts(&mut self, stmts: &[Stmt]) {
         for stmt in stmts {
             self.assemble_stmt(stmt);
         }
     }
 
-    fn assemble_stmt(&mut self, stmt: &Stmt<'a>) {
+    fn assemble_stmt(&mut self, stmt: &Stmt) {
         use Stmt::*;
         match stmt {
-            Label(name) => match self.labels.entry((name, 0)) {
-                Entry::Occupied(_) => panic!("Duplicate label definition: {}", name),
-                Entry::Vacant(entry) => {
-                    entry.insert(self.code.len());
-                }
-            },
-            __LabelMacro(name, macro_id) => match self.labels.entry((name, *macro_id)) {
-                Entry::Occupied(_) => panic!("Duplicate label definition: {}", name),
+            Label(ident) => match self.labels.entry(*ident) {
+                Entry::Occupied(_) => panic!("Duplicate label definition: {:?}", ident),
                 Entry::Vacant(entry) => {
                     entry.insert(self.code.len());
                 }
@@ -347,49 +433,37 @@ impl<'a> Assembler<'a> {
                 self.push(99);
             }
 
+            // target = memory[a]
             Load(a, b) => {
-                // add a 0 __load+1
-                let (a, ma) = self.assemble_param(1, a);
-                self.push(ADD + ma * 100 + 1_000);
-                self.push(a);
-                self.push(0);
-                let macro_id = self.get_macro_id();
-                self.patches
-                    .entry(("__load", macro_id))
-                    .or_default()
-                    .push(self.code.len());
-                self.push(1);
-
-                assemble!(self, [label self "__load"]);
-
-                let (b, mb) = self.assemble_param(3, b);
-                self.push(ADD + 1_000 + mb * 10_000);
-                self.push(0);
-                self.push(0);
-                self.push(b);
-            }
-            Store(a, b) => {
-                // add b 0 __store+3
-                let (b, mb) = self.assemble_param(1, b);
-                self.push(ADD + mb * 100 + 1_000);
-                self.push(b);
-                self.push(0);
-                let macro_id = self.get_macro_id();
-                self.patches
-                    .entry(("__store", macro_id))
-                    .or_default()
-                    .push(self.code.len());
-                self.push(3);
+                let pos = self.code.len() as i64 + 5;
                 assemble!(self,
-                    [label self "__store"],
+                    [add a 0 (ref pos)],
+                    [add (ref 0) 0 b],
                 );
-
-                let (a, ma) = self.assemble_param(1, a);
-                self.push(ADD + ma * 100 + 1_000);
-                self.push(a);
-                self.push(0);
-                self.push(0);
             }
+            // memory[b] = a
+            Store(a, b) => {
+                let pos = self.code.len() as i64 + 7;
+                assemble!(self,
+                    [add b 0 (ref pos)],
+                    [add a 0 (ref 0)],
+                );
+            }
+            LoadStack(index, target) => {
+                let pos = self.code.len() as i64 + 5;
+                assemble!(self,
+                    [add "__stack_ptr" index (ref pos)],
+                    [add (ref 0) 0 target],
+                );
+            }
+            StoreStack(val, index) => {
+                let pos = self.code.len() as i64 + 7;
+                assemble!(self,
+                    [add "__stack_ptr" index (ref pos)],
+                    [add val 0 (ref 0)],
+                );
+            }
+            AddStackPtr(a) => assemble!(self, [add "__stack_ptr" a "__stack_ptr"]),
             Push(a) => {
                 self.has_stack = true;
                 assemble!(self,
@@ -492,37 +566,24 @@ impl<'a> Assembler<'a> {
         }
     }
 
-    fn assemble_param(&mut self, i: usize, param: &Param<'a>) -> (i64, i64) {
+    fn assemble_param(&mut self, i: usize, param: &Param) -> (i64, i64) {
         match param {
-            Param::IdentPositional(name) => {
+            Param::IdentPositional(ident) => {
                 self.patches
-                    .entry((name, 0))
+                    .entry(*ident)
                     .or_default()
                     .push(self.code.len() + i);
                 (0, 0)
             }
-            Param::IdentImmediate(name) => {
+            Param::IdentImmediate(ident) => {
                 self.patches
-                    .entry((name, 0))
+                    .entry(*ident)
                     .or_default()
                     .push(self.code.len() + i);
                 (0, 1)
             }
-            Param::__IdentPositionalMacro(name, macro_id) => {
-                self.patches
-                    .entry((name, *macro_id))
-                    .or_default()
-                    .push(self.code.len() + i);
-                (0, 0)
-            }
-            Param::__IdentImmediateMacro(name, macro_id) => {
-                self.patches
-                    .entry((name, *macro_id))
-                    .or_default()
-                    .push(self.code.len() + i);
-                (0, 1)
-            }
-            Param::Value(val) => (*val, 1),
+            Param::ValuePositional(val) => (*val, 0),
+            Param::ValueImmediate(val) => (*val, 1),
         }
     }
 

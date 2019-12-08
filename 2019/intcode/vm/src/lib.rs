@@ -14,6 +14,14 @@ impl Arg {
         }
     }
 }
+impl std::fmt::Display for Arg {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Positional(val) => write!(f, "[{}]", val),
+            Self::Immediate(val) => write!(f, "{}", val),
+        }
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Instr {
@@ -26,6 +34,23 @@ pub enum Instr {
     LessThan(Arg, Arg, Arg),
     Equal(Arg, Arg, Arg),
     Halt,
+}
+
+impl std::fmt::Display for Instr {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        use Instr::*;
+        match self {
+            Add(a, b, c) => write!(f, "add {} {} {}", a, b, c),
+            Mul(a, b, c) => write!(f, "mul {} {} {}", a, b, c),
+            In(a) => write!(f, "in {}", a),
+            Out(a) => write!(f, "out {}", a),
+            JumpTrue(a, b) => write!(f, "jmp_true {} {}", a, b),
+            JumpFalse(a, b) => write!(f, "jmp_false {} {}", a, b),
+            LessThan(a, b, c) => write!(f, "lt {} {} {}", a, b, c),
+            Equal(a, b, c) => write!(f, "eq {} {} {}", a, b, c),
+            Halt => write!(f, "hlt"),
+        }
+    }
 }
 
 pub struct VM {
@@ -110,7 +135,7 @@ impl VM {
             let ip = self.ip;
             let instr = self.decode();
             if self.trace {
-                println!("{}: {:?}", ip, instr);
+                println!("{}: {}", ip, instr);
             }
             match instr {
                 Add(a, b, c) => self.store(c, self.get_arg(a) + self.get_arg(b)),

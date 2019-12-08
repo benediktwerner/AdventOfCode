@@ -23,18 +23,19 @@ data = { "data" ~ param+ }
 data_array = { "array" ~ num ~ num }
 
 unary_instr = { "in" | "out" | "jmp" | "push" | "pop" | "call" }
-binary_instr = { "jnz" | "jtrue" | "jz" | "jfalse" | "not" | "mov" | "load" | "store" }
+binary_instr = { "jnz" | "jtrue" | "jz" | "jfalse" | "not" | "mov" | "load" | "store" | "loads" | "stores" }
 ternary_instr = { "add" | "mul" | "sub" | "div" | "mod" | "eq" | "lt" | "leq" | "gt" | "geq" | "and" | "or" }
 quaternary_instr = { "divmod" }
 
 ident = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 ident_immediate = ${ ":" ~ ident }
 num = ${ decimal | hex | oct | bin }
+num_positional = { "[" ~ num ~ "]" }
 decimal = @{ "-"? ~ ASCII_DIGIT+ }
 hex = @{ "-"? ~ "0x" ~ ASCII_HEX_DIGIT+ }
 oct = @{ "-"? ~ "0o" ~ ASCII_OCT_DIGIT+ }
 bin = @{ "-"? ~ "0b" ~ ASCII_BIN_DIGIT+ }
-param = { ident_immediate | ident | num }
+param = { ident_immediate | ident | num | num_positional }
 
 WHITESPACE = _{ " " | "\t" }
 COMMENT = _{ "#" ~ (!"\n" ~ ANY)* }
