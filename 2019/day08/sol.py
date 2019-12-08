@@ -37,4 +37,4 @@ with open(os.path.dirname(__file__) + "/input.txt") as f:
     print("Part 2:")
 
     for row in image:
-        print("".join("#" if c == WHITE else " " for c in row))
+        print("".join("\u2588" if c == WHITE else " " for c in row))
