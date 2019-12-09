@@ -36,9 +36,8 @@ OPS = {
 
 
 class VM:
-    def __init__(self, code, inp):
+    def __init__(self, code):
         self.code = list(code)
-        self.inp = inp
 
     def __getitem__(self, index):
         return self.mem[index]
@@ -78,7 +77,7 @@ class VM:
 
         return args
 
-    def run(self):
+    def run(self, inp):
         self.ip = 0
         self.relative_base = 0
         self.mem = self.code.copy()
@@ -97,8 +96,9 @@ class VM:
             self.ip += 1 + len(arg_kinds)
 
             if op == IN:
-                self[a] = self.inp
+                self[a] = inp
             elif op == OUT:
+                print(a)
                 out = a
             elif op == ADD:
                 self[c] = a + b
@@ -124,6 +124,7 @@ class VM:
 
 with open(os.path.dirname(__file__) + "/input.txt") as f:
     code = list(map(int, f.readline().strip().split(",")))
+    vm = VM(code)
 
-    print("Part 1:", VM(code, 1).run())
-    print("Part 2:", VM(code, 2).run())
+    print("Part 1:", vm.run(1))
+    print("Part 2:", vm.run(2))
