@@ -7,6 +7,7 @@ from collections import defaultdict, deque
 
 POSITION = 0
 IMMEDIATE = 1
+RELATIVE = 2
 
 ADD = 1
 MUL = 2
@@ -16,6 +17,7 @@ JUMP_TRUE = 5
 JUMP_FALSE = 6
 LESS_THAN = 7
 EQUALS = 8
+ADD_RELATIVE_BASE = 9
 HALT = 99
 
 READ = 0
@@ -30,6 +32,7 @@ OPS = {
     JUMP_FALSE: (READ, READ),
     LESS_THAN: (READ, READ, WRITE),
     EQUALS: (READ, READ, WRITE),
+    ADD_RELATIVE_BASE: (READ,),
     HALT: (),
 }
 
@@ -54,22 +57,33 @@ class VM:
             mode = modes % 10
             modes //= 10
 
-            if kind == READ:
-                if mode == POSITION:
+            if mode == RELATIVE:
+                a += self.relative_base
+
+            if mode in (POSITION, RELATIVE):
+                if a < 0:
+                    raise Exception(f"Invalid access to negative memory index: {a}")
+                elif a >= len(self.mem):
+                    self.mem += [0] * (a + 1 - len(self.mem))
+
+                if kind == READ:
                     a = self[a]
-            elif kind == WRITE:
-                if mode != POSITION:
+                elif kind != WRITE:
+                    raise Exception(f"Invalid arg kind: {kind}")
+
+            elif mode == IMMEDIATE:
+                if kind == WRITE:
                     raise Exception(f"Invalid arg mode for write arg: {mode}")
             else:
-                raise Exception(f"Invalid arg kind: {kind}")
+                raise Exception(f"Invalid arg mode: {mode}")
 
             args[i] = a
 
         return args
-    
+
     def push_in(self, inp):
         self.inp.extend(inp)
-    
+
     def pop_out(self):
         out = self.out
         self.out = []
@@ -77,6 +91,7 @@ class VM:
 
     def run(self):
         self.ip = 0
+        self.relative_base = 0
 
         while self[self.ip] != HALT:
             instr = self[self.ip]
@@ -110,6 +125,8 @@ class VM:
             elif op == JUMP_FALSE:
                 if a == 0:
                     self.ip = b
+            elif op == ADD_RELATIVE_BASE:
+                self.relative_base += a
             else:
                 raise Exception(f"Unimplemented opcode: {op}")
 
@@ -123,7 +140,7 @@ class Scheduler:
         self.waiting = deque(range(len(self.vms)))
         self.gens = [vm.run() for vm in self.vms]
         self.out = []
-    
+
     def connect(self, start, end):
         self.connections[start].append(end)
 
@@ -143,11 +160,10 @@ class Scheduler:
                     self.out.extend(out)
                 else:
                     self.vms[conn].push_in(out)
-        
+
         return self.out
 
 
-    
 with open(os.path.dirname(__file__) + "/input.txt") as f:
     code = list(map(int, f.readline().strip().split(",")))
 
@@ -159,12 +175,12 @@ with open(os.path.dirname(__file__) + "/input.txt") as f:
 
         sched = Scheduler(vms)
         for i in range(4):
-            sched.connect(i, i+1)
+            sched.connect(i, i + 1)
         sched.connect(4, Scheduler.OUT)
 
         out = sched.run()
         result = max(result, out[-1])
-    
+
     print("Part 1:", result)
 
     result = float("-inf")
@@ -175,11 +191,11 @@ with open(os.path.dirname(__file__) + "/input.txt") as f:
 
         sched = Scheduler(vms)
         for i in range(4):
-            sched.connect(i, i+1)
+            sched.connect(i, i + 1)
         sched.connect(4, 0)
         sched.connect(4, Scheduler.OUT)
 
         out = sched.run()
         result = max(result, out[-1])
-    
+
     print("Part 2:", result)
