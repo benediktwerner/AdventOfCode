@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 from collections import defaultdict
 
 
@@ -44,7 +44,7 @@ def run(instrs, **inits):
 
 
 def main():
-    with open(os.path.dirname(__file__) + "/input.txt") as f:
+    with open(path.join(path.dirname(__file__), "input.txt")) as f:
         instrs = [line.strip.split() for line in f]
 
         print("Part 1:", run(instrs))

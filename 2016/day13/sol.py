@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 from collections import deque
 
 
@@ -34,7 +34,7 @@ def part1():
                 todo.append(nxt)
 
 
-with open(os.path.dirname(__file__) + "/input.txt") as f:
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
     designer_num = int(f.readline().strip())
 
     print("Part 1:", part1())

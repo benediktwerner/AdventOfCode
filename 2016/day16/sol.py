@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 
 
 def gen(line, length):
@@ -25,7 +25,7 @@ def checksum(line):
 
 
 def main():
-    with open(os.path.dirname(__file__) + "/input.txt") as f:
+    with open(path.join(path.dirname(__file__), "input.txt")) as f:
         start = f.readline().strip()
 
         print("Part 1:", checksum(gen(start, 272)))

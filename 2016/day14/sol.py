@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 import hashlib
 from collections import deque
 
@@ -42,7 +42,7 @@ def find(stretch):
     return index - 1
 
 
-with open(os.path.dirname(__file__) + "/input.txt") as f:
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
     salt = f.readline().strip().encode()
 
     print("Part 1:", find(0))

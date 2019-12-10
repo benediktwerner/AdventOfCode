@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 
 WIDTH = 25
 HEIGHT = 6
@@ -10,7 +10,7 @@ BLACK = 0
 WHITE = 1
 TRANSPARENT = 2
 
-with open(os.path.dirname(__file__) + "/input.txt") as f:
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
     line = f.readline().strip()
     pixels_iter = iter(line)
 

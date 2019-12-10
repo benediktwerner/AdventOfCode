@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 
 
 def decompressed_length(line, start=0, end=None, recurse=True):
@@ -33,7 +33,7 @@ def decompressed_length(line, start=0, end=None, recurse=True):
 
 
 def main():
-    with open(os.path.dirname(__file__) + "/input.txt") as f:
+    with open(path.join(path.dirname(__file__), "input.txt")) as f:
         line = f.readline().strip()
 
         print("Part 1:", decompressed_length(line, recurse=False))

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 
 
 def main():
-    with open(os.path.dirname(__file__) + "/input.txt") as f:
+    with open(path.join(path.dirname(__file__), "input.txt")) as f:
         attrs = {
             "children": 3,
             "cats": 7,

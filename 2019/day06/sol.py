@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 from networkx import DiGraph, dfs_postorder_nodes, shortest_path_length
 
 
-with open(os.path.dirname(__file__) + "/input.txt") as f:
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
     g = DiGraph()
 
     for line in f:

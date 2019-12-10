@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 
 
 def run_program(memory, noun, verb):
@@ -22,7 +22,7 @@ def run_program(memory, noun, verb):
 
 
 def main():
-    with open(os.path.dirname(__file__) + "/input.txt") as f:
+    with open(path.join(path.dirname(__file__), "input.txt")) as f:
         memory = list(map(int, f.readline().strip().split(",")))
 
         print("Part 1:", run_program(memory, 12, 2))

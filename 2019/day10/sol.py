@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 import math
 
 
@@ -8,7 +8,7 @@ def dist(a, b):
     return (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2
 
 
-with open(os.path.dirname(__file__) + "/input.txt") as f:
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
     astroids = []
 
     for y, line in enumerate(f):

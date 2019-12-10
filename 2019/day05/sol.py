@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os
+from os import path
 
 
 POSITION = 0
@@ -106,7 +106,7 @@ class VM:
         return out
 
 
-with open(os.path.dirname(__file__) + "/input.txt") as f:
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
     code = list(map(int, f.readline().strip().split(",")))
 
     print("Part 1:", VM(code, 1).run())

@@ -8,12 +8,12 @@ from sys import argv
 TEMPLATE = """\
 #!/usr/bin/env python3
 
-import os
+from os import path
 from collections import *
 from networkx import *
 
 
-with open(os.path.dirname(__file__) + "/input.txt") as f:
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
     for line in f:
         line = line.strip()
 
