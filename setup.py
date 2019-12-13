@@ -11,6 +11,8 @@ TEMPLATE = """\
 from os import path
 from collections import *
 from networkx import *
+import itertools
+import math
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
