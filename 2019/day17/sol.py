@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
 from os import path
-from collections import *
-from networkx import *
-import itertools
-import math
+from collections import defaultdict
+import re
 
 POSITION = 0
 IMMEDIATE = 1
@@ -125,27 +123,33 @@ class VM:
         return out
 
     def run(self, inp=None):
-        return self.gen.send(inp)
-
+        try:
+            return self.gen.send(inp)
+        except StopIteration as e:
+            return e.value
+    
 
 NEWLINE = ord("\n")
+DX = (0, 1, 0, -1)
+DY = (-1, 0, 1, 0)
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
     code = list(map(int, f.readline().strip().split(",")))
+    code[0] = 2
     vm = VM(code)
     m = defaultdict(int)
 
-    try:
-        vm.run()
-    except StopIteration as e:
-        x, y = 0, 0
-        for c in e.value:
-            if c == NEWLINE:
-                x = 0
-                y += 1
-            else:
-                m[(x, y)] = chr(c)
-                x += 1
+    x, y = 0, 0
+    for c in vm.run():
+        if c == NEWLINE:
+            x = 0
+            y += 1
+        else:
+            c = chr(c)
+            m[(x, y)] = c
+            if c in ("v", "^", "<", ">"):
+                robot = (x, y)
+            x += 1
 
     total = 0
 
@@ -159,3 +163,70 @@ with open(path.join(path.dirname(__file__), "input.txt")) as f:
             total += x * y
 
     print("Part 1:", total)
+
+    x, y = robot
+    d = ("^", ">", "v", "<").index(m[robot])
+    commands = []
+
+    while True:
+        nx = x + DX[d]
+        ny = y + DY[d]
+        if m[(nx, ny)] == "#":
+            if commands and commands[-1] not in ("R", "L"):
+                commands[-1] += 1
+            else:
+                commands.append(1)
+            x, y = nx, ny
+            continue
+
+        d = (d + 1) % 4
+        if m[(x + DX[d], y + DY[d])] == "#":
+            commands.append("R")
+            continue
+
+        d = (d + 2) % 4
+        if m[(x + DX[d], y + DY[d])] == "#":
+            commands.append("L")
+            continue
+
+        break
+
+    commands = ",".join(map(str, commands)) + ","
+    match = re.match(r"^(.{1,21})\1*(.{1,21})(?:\1|\2)*(.{1,21})(?:\1|\2|\3)*$", commands)
+    fa = match.group(1)
+    fb = match.group(2)
+    fc = match.group(3)
+    funcs = []
+    while commands:
+        if commands.startswith(fa):
+            funcs.append("A")
+            commands = commands[len(fa):]
+        elif commands.startswith(fb):
+            funcs.append("B")
+            commands = commands[len(fb):]
+        elif commands.startswith(fc):
+            funcs.append("C")
+            commands = commands[len(fc):]
+        else:
+            assert False
+
+    for c in ",".join(funcs):
+        vm.run(ord(c))
+    vm.run(NEWLINE)
+
+    for c in fa[:-1]:
+        vm.run(ord(c))
+    vm.run(NEWLINE)
+
+    for c in fb[:-1]:
+        vm.run(ord(c))
+    vm.run(NEWLINE)
+
+    for c in fc[:-1]:
+        vm.run(ord(c))
+    vm.run(NEWLINE)
+
+    vm.run(ord("n"))
+    out = vm.run(NEWLINE)[-1]
+
+    print("Part 2:", out)
