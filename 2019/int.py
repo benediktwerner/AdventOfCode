@@ -43,6 +43,9 @@ class VM:
         self.mem = list(code)
         self.ip = 0
         self.relative_base = 0
+        self.inputs = deque()
+        self.outputs = deque()
+        self.halted = False
         self.gen = self.__run()
 
     def __getitem__(self, index):
@@ -84,8 +87,6 @@ class VM:
         return args
 
     def __run(self):
-        out = []
-
         while self[self.ip] != HALT:
             instr = self[self.ip]
             op = instr % 100
@@ -99,10 +100,11 @@ class VM:
             self.ip += 1 + len(arg_kinds)
 
             if op == IN:
-                self[a] = (yield out)
-                out.clear()
+                while not self.inputs:
+                    yield
+                self[a] = self.inputs.popleft()
             elif op == OUT:
-                out.append(a)
+                self.outputs.append(a)
             elif op == ADD:
                 self[c] = a + b
             elif op == MUL:
@@ -122,18 +124,23 @@ class VM:
             else:
                 raise Exception(f"Unimplemented opcode: {op}")
 
-        return out
+        self.halted = True
+        yield
 
-    def run(self, inp=None):
-        return self.gen.send(inp)
+    def run(self, *inputs, out=None):
+        self.inputs.extend(inputs)
+        next(self.gen)
+        return self.out(out)
+
+    def out(self, n=None):
+        if n is None:
+            outs = list(self.outputs)
+            self.outputs.clear()
+            return outs
+
+        return [self.outputs.popleft() for _ in range(n)]
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
     code = list(map(int, f.readline().strip().split(",")))
     vm = VM(code)
-
-    try:
-        vm.run()
-
-    except StopIteration as e:
-        print(e.value)
