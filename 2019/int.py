@@ -128,17 +128,23 @@ class VM:
         yield
 
     def run(self, *inputs, out=None):
-        self.inputs.extend(inputs)
+        for inp in inputs:
+            if isinstance(inp, str):
+                self.inputs.extend(ord(c) for c in inp)
+            else:
+                self.inputs.append(inp)
+
         next(self.gen)
         return self.out(out)
 
-    def out(self, n=None):
+    def out(self, n=None, ascii=False):
         if n is None:
             outs = list(self.outputs)
             self.outputs.clear()
-            return outs
+        else:
+            outs = [self.outputs.popleft() for _ in range(n)]
 
-        return [self.outputs.popleft() for _ in range(n)]
+        return "".join(map(chr, outs)) if ascii else outs
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
