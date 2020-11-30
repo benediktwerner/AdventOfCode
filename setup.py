@@ -13,6 +13,7 @@ from collections import *
 from networkx import *
 import itertools
 import math
+import re
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
