@@ -58,9 +58,14 @@ except FileNotFoundError:
 os.makedirs(dir_name, exist_ok=True)
 target_file = os.path.join(dir_name, "input.txt")
 
-with open(target_file, "w") as f:
-    url = URL.format(year=year, day=day)
-    req = requests.get(url, cookies=cookies)
-    f.write(req.text)
+url = URL.format(year=year, day=day)
+req = requests.get(url, cookies=cookies)
 
-print("Input for", dir_name, "written to", target_file)
+if req.status_code != 200:
+    print("Error. Got status:", req.status_code)
+    print(req.text)
+    exit(3)
+else:
+    with open(target_file, "w") as f:
+        f.write(req.text)
+    print("Input for", dir_name, "written to", target_file)
