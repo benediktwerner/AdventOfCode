@@ -14,6 +14,13 @@ from networkx import *
 import itertools
 import math
 import re
+import pyperclip
+
+
+def out(result):
+    print("Output:", result)
+    pyperclip.copy(str(result))
+    print("Copied to clipboard")
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
@@ -24,7 +31,7 @@ with open(path.join(path.dirname(__file__), "input.txt")) as f:
 
 
 def print_usage():
-    print("Usage:", argv[0], "[YEAR] DAY")
+    print("Usage:", argv[0], "[[YEAR] DAY]")
     exit(1)
 
 
