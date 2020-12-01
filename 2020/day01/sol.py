@@ -2,8 +2,7 @@
 
 from os import path
 import itertools
-import operator
-import functools
+import math
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
@@ -12,7 +11,7 @@ with open(path.join(path.dirname(__file__), "input.txt")) as f:
     def solve(count):
         for ns in itertools.combinations(numbers, count):
             if sum(ns) == 2020:
-                return functools.reduce(operator.mul, ns)
+                return math.prod(ns)
 
     print("Part 1:", solve(2))
     print("Part 2:", solve(3))
