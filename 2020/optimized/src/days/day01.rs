@@ -49,12 +49,12 @@ impl crate::Solver for Solver {
 
         debug_assert!(i == count);
 
-        for (i, &a) in nums_list.iter().enumerate() {
+        'outer: for (i, &a) in nums_list.iter().enumerate() {
             let opp = 2020 - a;
             if *nums.get_unchecked(opp as usize) {
                 output.0 = a * opp;
                 if output.1 != 0 {
-                    return (output.0.to_string(), output.1.to_string());
+                    break 'outer;
                 }
             }
 
@@ -66,13 +66,13 @@ impl crate::Solver for Solver {
                 if *nums.get_unchecked(opp2 as usize) {
                     output.1 = a * b * opp2;
                     if output.0 != 0 {
-                        return (output.0.to_string(), output.1.to_string());
+                        break 'outer;
                     }
                 }
             }
         }
 
-        panic!("Invalid input. Unable to find a solution!");
+        (output.0.to_string(), output.1.to_string())
     }
 }
 
