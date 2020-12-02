@@ -1,17 +1,12 @@
-use rand::seq::SliceRandom as _;
 use std::{path::Path, time::Instant};
 
 mod days;
 mod utils;
 
 trait Solver {
-    type Input;
-    type Output;
-
-    fn parse_input(&self, input: &str) -> anyhow::Result<Self::Input>;
-    fn is_input_safe(&self, input: &Self::Input) -> bool;
-    unsafe fn solve(&self, input: Self::Input) -> Self::Output;
-    unsafe fn solve_str(&self, input: &str) -> Self::Output;
+    fn day(&self) -> u8;
+    fn is_input_safe(&self, input: &str) -> anyhow::Result<bool>;
+    unsafe fn solve(&self, input: &str) -> (String, String);
 }
 
 fn input_path(day: u8) -> std::path::PathBuf {
@@ -20,52 +15,45 @@ fn input_path(day: u8) -> std::path::PathBuf {
         .join("input.txt")
 }
 
-fn main() {
-    let solver = days::day01::Solver;
-
-    let path = input_path(1);
+fn benchmark(solver: impl Solver, part1: impl ToString, part2: impl ToString) -> u128 {
+    let path = input_path(solver.day());
     let input_string = match std::fs::read_to_string(path) {
-        Ok(inp) => inp,
+        Ok(inp) => inp.replace("\r", ""),
         Err(error) => {
-            eprintln!("Error while reading input file: {}", error);
-            return;
-        }
-    };
-    let input = match solver.parse_input(&input_string) {
-        Ok(inp) => inp,
-        Err(error) => {
-            eprintln!("Error while parsing input file: {}", error);
-            return;
+            panic!("Error while reading input file: {}", error);
         }
     };
 
-    const COUNT: u128 = 10_000;
-    let mut sum = 0;
-    let mut rng = rand::thread_rng();
+    match solver.is_input_safe(&input_string) {
+        Ok(true) => (),
+        Ok(false) => {
+            panic!("Unsafe input");
+        }
+        Err(error) => {
+            panic!("Error while parsing input file: {}", error);
+        }
+    };
 
+    const COUNT: u32 = 10_000;
+    let expected = (part1.to_string(), part2.to_string());
+
+    let inp = &input_string;
+    let mut out = Default::default();
+
+    let start = Instant::now();
     for _ in 0..COUNT {
-        let mut inp = input.clone();
-        inp.shuffle(&mut rng);
-        assert!(solver.is_input_safe(&inp), "Input unsafe");
-        let start = Instant::now();
-        let out = unsafe { solver.solve(inp) };
-        let end = Instant::now();
-        assert_eq!(out, (1015476, 200878544), "Wrong result");
-        sum += end.duration_since(start).as_nanos();
+        out = unsafe { solver.solve(inp) };
     }
+    let end = Instant::now();
 
-    println!("Time: {}", utils::format_duration(sum / COUNT));
+    assert_eq!(out, expected, "Wrong result");
 
-    sum = 0;
+    end.duration_since(start).as_nanos() / COUNT as u128
+}
 
-    for _ in 0..COUNT {
-        let inp = &input_string;
-        let start = Instant::now();
-        let out = unsafe { solver.solve_str(inp) };
-        let end = Instant::now();
-        assert_eq!(out, (1015476, 200878544), "Wrong result");
-        sum += end.duration_since(start).as_nanos();
-    }
-
-    println!("Time: {}", utils::format_duration(sum / COUNT));
+fn main() {
+    println!(
+        "Time: {}",
+        utils::format_duration(benchmark(days::day01::Solver, 1015476, 200878544))
+    );
 }

@@ -11,4 +11,7 @@ panic = "abort"
 
 [dependencies]
 anyhow = "1.0"
-rand = "0.7"
+# libc = "0.2"
+
+# [build-dependencies]
+# cc = "1.0"
