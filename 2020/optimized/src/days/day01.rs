@@ -20,15 +20,24 @@ impl crate::Solver for Solver {
         input.iter().all(|n| *n < 2020)
     }
 
-    unsafe fn solve(&self, input: &mut Self::Input) -> Self::Output {
+    unsafe fn solve(&self, mut input: Self::Input) -> Self::Output {
         let mut output = (0, 0);
 
-        let mut nums = [false; 4000];
-
-        input.sort_unstable();
+        let mut nums = [false; 2020];
 
         for n in input.iter() {
             *nums.get_unchecked_mut(*n as usize) = true;
+        }
+
+        // input.sort_unstable();
+
+        // Sort input
+        let mut i = 0;
+        for (n, b) in nums.iter().enumerate() {
+            if *b {
+                *input.get_unchecked_mut(i) = n as u32;
+                i += 1;
+            }
         }
 
         for (i, &a) in input.iter().enumerate() {
