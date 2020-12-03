@@ -9,6 +9,9 @@ import re
 import pyperclip
 
 
+def ints(string):
+    return map(int, re.findall(r"([0-9]+)", string))
+
 def reg(pattern, string):
     rega(pattern, string)[0]
 
