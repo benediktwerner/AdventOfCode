@@ -11,7 +11,7 @@ panic = "abort"
 
 [dependencies]
 anyhow = "1.0"
-regex = "*"
+# regex = "*"
 # libc = "0.2"
 
 # [build-dependencies]
