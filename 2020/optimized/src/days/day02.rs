@@ -84,38 +84,38 @@ impl crate::Solver for Solver {
     unsafe fn solve(&self, input: &str) -> (String, String) {
         let mut output = (0, 0);
 
-        let bytes = input.as_bytes();
+        let bytes = crate::SliceWrapper::new(input.as_bytes());
         let mut i = 0;
 
         while i < bytes.len() {
             let mut low = 0;
-            while *bytes.get_unchecked(i) != b'-' {
-                low = low * 10 + (*bytes.get_unchecked(i) - b'0');
+            while bytes[i] != b'-' {
+                low = low * 10 + bytes[i] - b'0';
                 i += 1;
             }
 
             i += 1;
             let mut high = 0;
-            while *bytes.get_unchecked(i) != b' ' {
-                high = high * 10 + (*bytes.get_unchecked(i) - b'0');
+            while bytes[i] != b' ' {
+                high = high * 10 + bytes[i] - b'0';
                 i += 1;
             }
 
             i += 1;
-            let char = *bytes.get_unchecked(i);
+            let char = bytes[i];
             let mut count = 0;
             i += 2;
 
-            let char_at_low = *bytes.get_unchecked(i + low as usize) == char;
-            let char_at_high = *bytes.get_unchecked(i + high as usize) == char;
+            let char_at_low = bytes[i + low as usize] == char;
+            let char_at_high = bytes[i + high as usize] == char;
             if char_at_low ^ char_at_high {
                 output.1 += 1;
             }
 
             i += 1;
 
-            while *bytes.get_unchecked(i) != b'\n' {
-                if *bytes.get_unchecked(i) == char {
+            while bytes[i] != b'\n' {
+                if bytes[i] == char {
                     count += 1;
                 }
                 i += 1;

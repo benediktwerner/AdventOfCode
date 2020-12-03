@@ -4,6 +4,9 @@ use anyhow::bail;
 
 mod days;
 mod utils;
+mod slice_wrapper;
+
+pub use slice_wrapper::*;
 
 trait Solver {
     fn day(&self) -> u8;
