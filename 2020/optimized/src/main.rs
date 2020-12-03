@@ -5,6 +5,7 @@ use anyhow::bail;
 mod days;
 mod utils;
 mod slice_wrapper;
+mod unreachable;
 
 pub use slice_wrapper::*;
 
@@ -73,7 +74,8 @@ fn benchmark(
 
 fn main() {
     // let result = benchmark(days::day01::Solver, 1015476, 200878544);
-    let result = benchmark(days::day02::Solver::new(), 439, 584);
+    // let result = benchmark(days::day02::Solver::new(), 439, 584);
+    let result = benchmark(days::day03::Solver, 167, 736527114);
     let time = match result {
         Ok(time) => time,
         Err(error) => {

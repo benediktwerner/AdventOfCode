@@ -5,12 +5,12 @@ pub struct Solver {
 }
 
 impl Solver {
-    pub fn new() -> Self {
-        Solver {
-            // regex: regex::Regex::new(r"(?-u)([0-9]+)-([0-9]+) ([a-z]): ([a-z]+)")
-            //     .expect("Invalid regex"),
-        }
-    }
+    // pub fn new() -> Self {
+    //     Solver {
+    //         regex: regex::Regex::new(r"(?-u)([0-9]+)-([0-9]+) ([a-z]): ([a-z]+)")
+    //             .expect("Invalid regex"),
+    //     }
+    // }
 }
 
 impl crate::Solver for Solver {
