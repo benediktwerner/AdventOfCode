@@ -1,33 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+import shutil
 from datetime import datetime
 from sys import argv
 
 
-TEMPLATE = """\
-#!/usr/bin/env python3
-
-from os import path
-from collections import *
-from networkx import *
-import itertools
-import math
-import re
-import pyperclip
-
-
-def out(result):
-    print("Output:", result)
-    pyperclip.copy(str(result))
-    print("Copied to clipboard")
-
-
-with open(path.join(path.dirname(__file__), "input.txt")) as f:
-    for line in f:
-        line = line.strip()
-
-"""
+TEMPLATE_FILE = "template.py"
+TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), TEMPLATE_FILE)
 
 
 def print_usage():
@@ -72,7 +52,5 @@ target_path = os.path.join(dir_name, "sol.py")
 if os.path.exists(target_path):
     print("ERROR:", target_path,"exists already")
 else:
-    with open(target_path, "w") as f:
-        f.write(TEMPLATE)
-
+    shutil.copy(TEMPLATE_PATH, target_path)
     print("Created", target_path)
