@@ -16,6 +16,7 @@ impl crate::Solver for Solver {
     }
 
     fn is_input_safe(&self, input: &str) -> anyhow::Result<bool> {
+        ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         for line in input.lines() {
             if line
                 .parse::<u32>()

@@ -16,6 +16,7 @@ impl crate::Solver for Solver {
     }
 
     fn is_input_safe(&self, input: &str) -> anyhow::Result<bool> {
+        ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         for line in input.lines() {
             let parts: Vec<_> = line.split(' ').collect();
             ensure!(parts.len() == 3, "Wrong number of parts: {}", line);

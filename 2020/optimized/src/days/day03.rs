@@ -23,6 +23,7 @@ impl crate::Solver for Solver {
             "Input longer than u32::MAX: {}",
             input.len()
         );
+        ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         let mut lines = input.lines();
         let first = match lines.next() {
             Some(line) => line,
