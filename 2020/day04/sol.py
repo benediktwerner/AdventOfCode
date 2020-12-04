@@ -25,10 +25,9 @@ with open(path.join(path.dirname(__file__), "input.txt")) as f:
     for passport_lines in f.read().split("\n\n"):
         passport = {}
 
-        for line in passport_lines.splitlines():
-            for parts in line.split():
-                key, value = parts.split(":")
-                passport[key] = value
+        for parts in passport_lines.split():
+            key, value = parts.split(":")
+            passport[key] = value
 
         valid1 = True
         valid2 = True
