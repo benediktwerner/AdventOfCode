@@ -80,7 +80,8 @@ fn main() {
 
     // let result = benchmark(days::day01::Solver::new(), 1015476, 200878544);
     // let result = benchmark(days::day02::Solver::new(), 439, 584);
-    let result = benchmark(days::day03::Solver::new(), 167, 736527114);
+    // let result = benchmark(days::day03::Solver::new(), 167, 736527114);
+    let result = benchmark(days::day04::Solver::new(), 192, 101);
     let time = match result {
         Ok(time) => time,
         Err(error) => {
