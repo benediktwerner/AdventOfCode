@@ -2,16 +2,19 @@ use std::{path::Path, time::Instant};
 
 use anyhow::bail;
 
+mod unreachable;
+
 mod days;
 mod utils;
 mod slice_wrapper;
-mod unreachable;
 
 pub use slice_wrapper::*;
 
-trait Solver {
+pub trait Solver {
     fn day(&self) -> u8;
     fn is_input_safe(&self, input: &str) -> anyhow::Result<bool>;
+    /// # Safety
+    /// This method is safe to call only if `self.is_input_safe(input)` returned `Ok(true)`
     unsafe fn solve(&self, input: &str) -> (String, String);
 }
 
@@ -73,9 +76,11 @@ fn benchmark(
 }
 
 fn main() {
-    // let result = benchmark(days::day01::Solver, 1015476, 200878544);
+    let _ = days::get_solvers();
+
+    // let result = benchmark(days::day01::Solver::new(), 1015476, 200878544);
     // let result = benchmark(days::day02::Solver::new(), 439, 584);
-    let result = benchmark(days::day03::Solver, 167, 736527114);
+    let result = benchmark(days::day03::Solver::new(), 167, 736527114);
     let time = match result {
         Ok(time) => time,
         Err(error) => {

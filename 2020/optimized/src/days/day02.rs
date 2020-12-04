@@ -1,16 +1,13 @@
 use anyhow::{ensure, Context};
 
-pub struct Solver {
-    // regex: regex::Regex,
-}
+pub struct Solver(());
 
 impl Solver {
-    // pub fn new() -> Self {
-    //     Solver {
-    //         regex: regex::Regex::new(r"(?-u)([0-9]+)-([0-9]+) ([a-z]): ([a-z]+)")
-    //             .expect("Invalid regex"),
-    //     }
-    // }
+    pub fn new() -> Self {
+        let solver = Self(());
+        assert_solver_day!(solver);
+        solver
+    }
 }
 
 impl crate::Solver for Solver {
@@ -55,31 +52,6 @@ impl crate::Solver for Solver {
         }
         Ok(true)
     }
-
-    // fn solve(&self, input: &str) -> (String, String) {
-    //     let mut output = (0, 0);
-
-    //     for line in input.lines() {
-    //         if let Some(captures) = self.regex.captures(line) {
-    //             let low: usize = captures[1].parse().unwrap();
-    //             let high: usize = captures[2].parse().unwrap();
-    //             let char = captures[3].as_bytes()[0];
-
-    //             let pwd = captures[4].as_bytes();
-    //             let count = pwd.iter().copied().filter(|c| *c == char).count();
-    //             if low <= count && count <= high {
-    //                 output.0 += 1;
-    //             }
-    //             let char_at_low = pwd[low - 1] == char;
-    //             let char_at_high = pwd[high - 1] == char;
-    //             if char_at_low ^ char_at_high {
-    //                 output.1 += 1;
-    //             }
-    //         }
-    //     }
-
-    //     (output.0.to_string(), output.1.to_string())
-    // }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {
         let mut output = (0, 0);

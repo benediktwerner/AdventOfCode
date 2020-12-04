@@ -2,7 +2,15 @@ use anyhow::{bail, ensure};
 
 use crate::unreachable::UncheckedOptionExt;
 
-pub struct Solver;
+pub struct Solver(());
+
+impl Solver {
+    pub fn new() -> Self {
+        let solver = Self(());
+        assert_solver_day!(solver);
+        solver
+    }
+}
 
 impl crate::Solver for Solver {
     fn day(&self) -> u8 {
