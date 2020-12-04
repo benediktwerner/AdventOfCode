@@ -41,6 +41,7 @@ macro_rules! impl_index_mut {
 }
 
 #[repr(transparent)]
+#[derive(Clone, Copy)]
 pub struct SliceWrapper<'a, T>(&'a [T]);
 
 impl<'a, T> SliceWrapper<'a, T> {
@@ -57,6 +58,7 @@ impl<'a, T> SliceWrapper<'a, T> {
 }
 
 impl_index!(usize, SliceWrapper<'a, T>, 'a, T);
+impl_index!(std::ops::Range<usize>, SliceWrapper<'a, T>, 'a, T);
 
 impl<'a, T> std::ops::Index<u32> for SliceWrapper<'a, T> {
     type Output = T;
@@ -64,6 +66,15 @@ impl<'a, T> std::ops::Index<u32> for SliceWrapper<'a, T> {
     #[inline(always)]
     fn index(&self, index: u32) -> &Self::Output {
         self.index(index as usize)
+    }
+}
+
+impl<'a, T> std::ops::Index<std::ops::Range<u32>> for SliceWrapper<'a, T> {
+    type Output = [T];
+
+    #[inline(always)]
+    fn index(&self, index: std::ops::Range<u32>) -> &Self::Output {
+        self.index(index.start as usize..index.end as usize)
     }
 }
 
