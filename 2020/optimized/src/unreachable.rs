@@ -1,3 +1,4 @@
+#[macro_use]
 macro_rules! debug_unreachable {
     () => {
         debug_unreachable!("entered unreachable code")
