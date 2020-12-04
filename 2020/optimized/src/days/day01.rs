@@ -1,4 +1,4 @@
-use anyhow::Context;
+use anyhow::{Context, ensure};
 
 pub struct Solver;
 
@@ -17,13 +17,18 @@ impl crate::Solver for Solver {
                 return Ok(false);
             }
         }
+        ensure!(input.lines().count() <= 200, "Input longer than 200 lines");
         Ok(true)
     }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {
         let mut output = (0, 0);
 
-        let mut nums = [false; 2020];
+        static mut NUMS: [bool; 2020] = [false; 2020];
+        let nums = &mut NUMS;
+        // NUMS = [false; 2020];
+
+        // let mut nums = [false; 2020];
 
         let mut num = 0;
         let mut count = 0;
@@ -37,9 +42,12 @@ impl crate::Solver for Solver {
             }
         }
 
-        let mut nums_list = Vec::with_capacity(count);
+        static mut NUMS_LIST: [u32; 200] = [0; 200];
+        let nums_list = &mut NUMS_LIST;
+
+        // let mut nums_list = Vec::with_capacity(count);
+        // nums_list.set_len(count);
         let mut i = 0;
-        nums_list.set_len(count);
         for (n, b) in nums.iter().enumerate() {
             if *b {
                 *nums_list.get_unchecked_mut(i) = n as u32;
