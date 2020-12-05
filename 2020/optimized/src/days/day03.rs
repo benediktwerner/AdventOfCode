@@ -46,7 +46,7 @@ impl crate::Solver for Solver {
         let mut output = (0, 1);
 
         let bytes = input.as_bytes();
-        let width = bytes.iter().position(|c| *c == b'\n').unchecked_unwrap() as u32;
+        let width = bytes.iter().position(|c| *c == b'\n').unwrap_unchecked() as u32;
         let length = bytes.len() as u32;
         let bytes = crate::SliceWrapper::new(bytes);
 
