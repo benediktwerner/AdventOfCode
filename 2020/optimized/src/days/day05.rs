@@ -56,19 +56,18 @@ impl crate::Solver for Solver {
 
         while i < input.len() {
             let mut id: u32 = 0;
-            id |= (bytes[i] as u32 & 0b100) << 7;
-            id |= (bytes[i + 1] as u32 & 0b100) << 6;
-            id |= (bytes[i + 2] as u32 & 0b100) << 5;
-            id |= (bytes[i + 3] as u32 & 0b100) << 4;
-            id |= (bytes[i + 4] as u32 & 0b100) << 3;
-            id |= (bytes[i + 5] as u32 & 0b100) << 2;
-            id |= (bytes[i + 6] as u32 & 0b100) << 1;
+            id |= (bytes[i] as u32 & 0b100) << 9;
+            id |= (bytes[i + 1] as u32 & 0b100) << 8;
+            id |= (bytes[i + 2] as u32 & 0b100) << 7;
+            id |= (bytes[i + 3] as u32 & 0b100) << 6;
+            id |= (bytes[i + 4] as u32 & 0b100) << 5;
+            id |= (bytes[i + 5] as u32 & 0b100) << 4;
+            id |= (bytes[i + 6] as u32 & 0b100) << 3;
+            id |= (bytes[i + 7] as u32 & 0b100) << 2;
+            id |= (bytes[i + 8] as u32 & 0b100) << 1;
+            id |= bytes[i + 9] as u32 & 0b100;
 
-            id |= bytes[i + 7] as u32 & 0b100;
-            id |= (bytes[i + 8] as u32 & 0b100) >> 1;
-            id |= (bytes[i + 9] as u32 & 0b100) >> 2;
-
-            id = !id & 0b11_1111_1111;
+            id = (!id >> 2) & 0b11_1111_1111;
 
             sum += id;
             min = min.min(id);
