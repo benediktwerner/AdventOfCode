@@ -57,7 +57,6 @@ impl crate::Solver for Solver {
                 }
             }
         }
-        // newline at end
         Ok(true)
     }
 
