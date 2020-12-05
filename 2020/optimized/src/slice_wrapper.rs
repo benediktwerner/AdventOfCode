@@ -51,10 +51,6 @@ impl<'a, T> SliceWrapper<'a, T> {
     pub unsafe fn new(slice: &'a [T]) -> Self {
         Self(slice)
     }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
 }
 
 impl_index!(usize, SliceWrapper<'a, T>, 'a, T);
@@ -78,6 +74,14 @@ impl<'a, T> std::ops::Index<std::ops::Range<u32>> for SliceWrapper<'a, T> {
     }
 }
 
+impl<'a, T> std::ops::Deref for SliceWrapper<'a, T> {
+    type Target = [T];
+
+    fn deref(&self) -> &Self::Target {
+        self.0
+    }
+}
+
 #[repr(transparent)]
 pub struct SliceWrapperMut<'a, T>(&'a mut [T]);
 
@@ -88,11 +92,21 @@ impl<'a, T> SliceWrapperMut<'a, T> {
     pub unsafe fn new(slice: &'a mut [T]) -> Self {
         Self(slice)
     }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
 }
 
 impl_index!(usize, SliceWrapperMut<'a, T>, 'a, T);
 impl_index_mut!(usize, SliceWrapperMut<'a, T>, 'a, T);
+
+impl<'a, T> std::ops::Deref for SliceWrapperMut<'a, T> {
+    type Target = [T];
+
+    fn deref(&self) -> &Self::Target {
+        self.0
+    }
+}
+
+impl<'a, T> std::ops::DerefMut for SliceWrapperMut<'a, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.0
+    }
+}
