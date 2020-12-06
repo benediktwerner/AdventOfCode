@@ -15,19 +15,16 @@ impl crate::Solver for Solver {
         1
     }
 
-    fn is_input_safe(&self, input: &str) -> anyhow::Result<bool> {
+    fn is_input_safe(&self, input: &str) -> anyhow::Result<()> {
         ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         for line in input.lines() {
-            if line
+            let number = line
                 .parse::<u32>()
-                .with_context(|| format!("Failed to convert {} to int", line))?
-                >= 2020
-            {
-                return Ok(false);
-            }
+                .with_context(|| format!("Failed to convert {} to int", line))?;
+            ensure!(number < 2020, "Number is bigger than 2020: {}", line);
         }
         ensure!(input.lines().count() <= 200, "Input longer than 200 lines");
-        Ok(true)
+        Ok(())
     }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {

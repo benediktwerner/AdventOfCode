@@ -17,7 +17,7 @@ impl crate::Solver for Solver {
         3
     }
 
-    fn is_input_safe(&self, input: &str) -> anyhow::Result<bool> {
+    fn is_input_safe(&self, input: &str) -> anyhow::Result<()> {
         ensure!(
             input.len() < u32::MAX as usize,
             "Input longer than u32::MAX: {}",
@@ -39,7 +39,7 @@ impl crate::Solver for Solver {
                 line.len()
             );
         }
-        Ok(true)
+        Ok(())
     }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {

@@ -15,7 +15,7 @@ impl crate::Solver for Solver {
         5
     }
 
-    fn is_input_safe(&self, input: &str) -> anyhow::Result<bool> {
+    fn is_input_safe(&self, input: &str) -> anyhow::Result<()> {
         ensure!(!input.is_empty(), "Input is empty");
         ensure!(input.len() / 11 < 4_000_000, "Input too long");
         ensure!(
@@ -44,7 +44,7 @@ impl crate::Solver for Solver {
                 i * 11 + 10
             );
         }
-        Ok(true)
+        Ok(())
     }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {

@@ -5,14 +5,14 @@ use anyhow::bail;
 mod unreachable;
 
 mod days;
-mod utils;
 mod slice_wrapper;
+mod utils;
 
 pub use slice_wrapper::*;
 
 pub trait Solver {
     fn day(&self) -> u8;
-    fn is_input_safe(&self, input: &str) -> anyhow::Result<bool>;
+    fn is_input_safe(&self, input: &str) -> anyhow::Result<()>;
     /// # Safety
     /// This method is safe to call only if `self.is_input_safe(input)` returned `Ok(true)`
     unsafe fn solve(&self, input: &str) -> (String, String);
@@ -44,15 +44,9 @@ fn benchmark(
         }
     };
 
-    match solver.is_input_safe(&input_string) {
-        Ok(true) => (),
-        Ok(false) => {
-            bail!("Unsafe input");
-        }
-        Err(error) => {
-            bail!("Error while parsing input file: {}", error);
-        }
-    };
+    if let Err(error) = solver.is_input_safe(&input_string) {
+        bail!("Error while parsing input file: {}", error);
+    }
 
     #[cfg(debug_assertions)]
     const COUNT: u32 = 1;

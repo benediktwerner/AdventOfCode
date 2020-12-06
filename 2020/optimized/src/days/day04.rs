@@ -15,12 +15,13 @@ impl crate::Solver for Solver {
         4
     }
 
-    fn is_input_safe(&self, input: &str) -> anyhow::Result<bool> {
+    fn is_input_safe(&self, input: &str) -> anyhow::Result<()> {
         ensure!(
             input.len() < u32::MAX as usize,
             "Input longer than u32::MAX: {}",
             input.len()
         );
+        ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         ensure!(
             input.len() >= 6,
             "Input is too short. (< 7 characters including newline)"
@@ -29,7 +30,6 @@ impl crate::Solver for Solver {
             &input[input.len() - 1..] == "\n",
             "Input is missing newline at the end"
         );
-        ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         for passport in input.split("\n\n") {
             ensure!(!passport.is_empty(), "Empty passport");
             for part in passport.split(|c| c == '\n' || c == ' ') {
@@ -57,7 +57,7 @@ impl crate::Solver for Solver {
                 }
             }
         }
-        Ok(true)
+        Ok(())
     }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {
