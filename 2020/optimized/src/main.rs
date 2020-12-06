@@ -1,6 +1,6 @@
 use std::{path::Path, time::Instant};
 
-use anyhow::bail;
+use anyhow::{bail, ensure};
 
 mod unreachable;
 
@@ -64,7 +64,7 @@ fn benchmark(
     }
     let end = Instant::now();
 
-    assert_eq!(out, expected, "Wrong result");
+    ensure!(out == expected, "Wrong result. {:?} vs {:?} (expected)", out, expected);
 
     Ok(end.duration_since(start).as_nanos() / COUNT as u128)
 }
