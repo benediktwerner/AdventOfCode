@@ -48,36 +48,35 @@ impl crate::Solver for Solver {
     }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {
-        let bytes = crate::SliceWrapper::new(input.as_bytes());
+        use core::arch::x86_64::__m128i;
+        use core::arch::x86_64::_mm_loadu_si128;
+        use core::arch::x86_64::_mm_shuffle_epi8;
+        use core::arch::x86_64::_mm_andnot_si128;
+        use core::arch::x86_64::_mm_slli_epi64;
+        use core::arch::x86_64::_mm_movemask_epi8;
+
         let mut min: u32 = u32::MAX;
         let mut max: u32 = 0;
         let mut sum: u32 = 0;
-        let mut i = 0;
 
-        while i < input.len() {
-            let mut id: u32 = 0;
+        const SHUFFLE: __m128i = unsafe { std::mem::transmute(0xff_ff_ff_ff_ff_ff_00_01_02_03_04_05_06_07_08_09_u128) };
+        const MASK: __m128i = unsafe { std::mem::transmute(0x0404_0404_0404_0404_0404_u128) };
 
-            #[allow(clippy::identity_op)]
-            {
-                id |= (bytes[i + 0] as u32 & 0b100) << 9;
-                id |= (bytes[i + 1] as u32 & 0b100) << 8;
-                id |= (bytes[i + 2] as u32 & 0b100) << 7;
-                id |= (bytes[i + 3] as u32 & 0b100) << 6;
-                id |= (bytes[i + 4] as u32 & 0b100) << 5;
-                id |= (bytes[i + 5] as u32 & 0b100) << 4;
-                id |= (bytes[i + 6] as u32 & 0b100) << 3;
-                id |= (bytes[i + 7] as u32 & 0b100) << 2;
-                id |= (bytes[i + 8] as u32 & 0b100) << 1;
-                id |= (bytes[i + 9] as u32 & 0b100) << 0;
-            }
+        let mut ptr = input.as_bytes().as_ptr();
+        let end_ptr = ptr.add(input.len());
 
-            id = (!id >> 2) & 0b11_1111_1111;
+        while ptr < end_ptr {
+            let mut ticket_bytes = _mm_loadu_si128(ptr as *const __m128i);
+            ticket_bytes = _mm_shuffle_epi8(ticket_bytes, SHUFFLE);
+            ticket_bytes = _mm_andnot_si128(ticket_bytes, MASK);
+            ticket_bytes = _mm_slli_epi64(ticket_bytes, 5);
+            let ticket_id = _mm_movemask_epi8(ticket_bytes) as u32;
 
-            sum += id;
-            min = min.min(id);
-            max = max.max(id);
+            sum += ticket_id;
+            min = min.min(ticket_id);
+            max = max.max(ticket_id);
 
-            i += 11;
+            ptr = ptr.add(11);
         }
 
         // sum(min..=max)
