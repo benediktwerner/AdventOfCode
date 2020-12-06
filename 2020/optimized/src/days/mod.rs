@@ -10,6 +10,7 @@ pub mod day02;
 pub mod day03;
 pub mod day04;
 pub mod day05;
+pub mod day06;
 
 pub fn get_solvers() -> Vec<Box<dyn crate::Solver>> {
     vec![
@@ -18,5 +19,6 @@ pub fn get_solvers() -> Vec<Box<dyn crate::Solver>> {
         Box::new(day03::Solver::new()),
         Box::new(day04::Solver::new()),
         Box::new(day05::Solver::new()),
+        Box::new(day06::Solver::new()),
     ]
 }
