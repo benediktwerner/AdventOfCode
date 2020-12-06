@@ -35,7 +35,7 @@ fn benchmark(
     solver: impl Solver,
     part1: impl ToString,
     part2: impl ToString,
-) -> anyhow::Result<u128> {
+) -> anyhow::Result<()> {
     let path = input_path(solver.day());
     let input_string = match std::fs::read_to_string(path) {
         Ok(inp) => add_newline(inp.replace("\r", "")),
@@ -59,14 +59,19 @@ fn benchmark(
     let mut out = Default::default();
 
     let start = Instant::now();
+    let startc = unsafe { std::arch::x86_64::_rdtsc() };
     for _ in 0..COUNT {
         out = unsafe { solver.solve(inp) };
     }
+    let endc =  unsafe { std::arch::x86_64::_rdtsc()};
     let end = Instant::now();
 
     ensure!(out == expected, "Wrong result. {:?} vs {:?} (expected)", out, expected);
 
-    Ok(end.duration_since(start).as_nanos() / COUNT as u128)
+    println!("Cylcles: {}", (endc - startc) / COUNT as u64);
+    println!("Time: {}", utils::format_duration(end.duration_since(start).as_nanos() / COUNT as u128));
+
+    Ok(())
 }
 
 fn main() {
@@ -78,13 +83,7 @@ fn main() {
     // let result = benchmark(days::day04::Solver::new(), 192, 101);
     // let result = benchmark(days::day05::Solver::new(), 938, 696);
     let result = benchmark(days::day06::Solver::new(), 7027, 3579);
-    let time = match result {
-        Ok(time) => time,
-        Err(error) => {
-            eprintln!("{}", error);
-            return;
-        }
-    };
-
-    println!("Time: {}", utils::format_duration(time));
+    if let Err(error) = result {
+        eprintln!("{}", error);
+    }
 }
