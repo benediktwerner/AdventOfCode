@@ -41,9 +41,15 @@ macro_rules! impl_index_mut {
 }
 
 #[repr(transparent)]
-#[derive(Clone, Copy)]
 #[non_exhaustive]
 pub struct SliceWrapper<'a, T>(pub &'a [T]);
+
+impl<'a, T> Clone for SliceWrapper<'a, T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+impl<'a, T> Copy for SliceWrapper<'a, T> {}
 
 impl<'a, T> SliceWrapper<'a, T> {
     /// # Safety
