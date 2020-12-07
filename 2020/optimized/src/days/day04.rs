@@ -53,7 +53,7 @@ impl crate::Solver for Solver {
                         "hgt" | "hcl" | "ecl" | "pid" | "cid" => (),
                         _ => bail!("Invalid key: {}", key),
                     },
-                    _ => ensure!(key.is_some(), "Invalid field: {}", part),
+                    _ => ensure!(part.is_empty(), "Invalid field: '{}'", part),
                 }
             }
         }
