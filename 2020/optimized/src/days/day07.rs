@@ -4,10 +4,6 @@ const SHINY_GOLD: u16 = (11 << 5) | 14;
 const PARSED_BIT: u64 = 63;
 const HAS_GOLD_BIT: u64 = 62;
 
-static mut BAGS: [u64; 2048] = [0; 2048];
-static mut BAG_COUNTS: [u16; 2048] = [0; 2048];
-static mut BAGS_REVERSE: [usize; 2048 * 3] = [0; 2048 * 3];
-
 pub struct Solver(());
 
 impl Solver {
@@ -44,15 +40,12 @@ impl crate::Solver for Solver {
         //  62. bit set => bag contains golden bag
         //  every 15 bits at 0, 15, 30, and 45 are contained bags
         //    11 (low) bits bag number and 4 (high) bits count
-        BAGS = [0_u64; 2048];
-        let mut bags = crate::SliceWrapperMut::new(&mut BAGS);
+        let mut bags = [0_u64; 2048];
+        let mut bags = crate::SliceWrapperMut::new(&mut bags);
 
         let vec_init = std::mem::transmute::<Vec<u16>, [usize; 3]>(Vec::new());
-        BAGS_REVERSE = std::mem::transmute([vec_init; 2048]);
-        #[allow(clippy::transmute_ptr_to_ptr)]
-        let mut bags_reverse = crate::SliceWrapperMut::<Vec<u16>>::new(std::mem::transmute(
-            &mut BAGS_REVERSE as &mut [usize],
-        ));
+        let mut bags_reverse: [Vec<u16>; 2048] = std::mem::transmute([vec_init; 2048]);
+        let mut bags_reverse = crate::SliceWrapperMut::<Vec<u16>>::new(&mut bags_reverse);
 
         let bytes = crate::SliceWrapper::new(input.as_bytes());
         let mut i = 0;
@@ -94,7 +87,7 @@ impl crate::Solver for Solver {
                 if has_gold {
                     bags[bag as usize] |= 1 << HAS_GOLD_BIT;
                     output.0 += 1;
-                    propagate_contains_gold(bag, &mut output.0);
+                    propagate_contains_gold(bag, &mut output.0, bags.0, bags_reverse.0);
                 }
             } else {
                 // skip "no other bags.\n"
@@ -108,38 +101,18 @@ impl crate::Solver for Solver {
             }
         }
 
-        BAG_COUNTS = [0_u16; 2048];
+        let mut bag_counts = [0_u16; 2048];
 
-        // for bag in 0..2048 {
-        //     let mut bag_data = bags[bag as usize];
-        //     if bag_data == 0 {continue;}
-        //     bag_data &= !(0b11 << HAS_GOLD_BIT);
-        //     loop {
-        //         let inner = bag_data & ((1 << 15) - 1);
-        //         if inner == 0 {
-        //             break;
-        //         }
-
-        //         let inner_multiplier = (inner >> 11) as u16;
-        //         let inner_bag = (inner & ((1 << 11) - 1)) as u16;
-        //         println!("{} => {} * {} {:b} {:b}", bag, inner_multiplier, inner_bag, inner, bags[bag as usize]);
-
-        //         bag_data >>= 15;
-        //     }
-        // }
-
-        // std::process::exit(0);
-
-        output.1 = count_contained_bags(SHINY_GOLD) as u32;
+        output.1 = count_contained_bags(SHINY_GOLD, bags.0, &mut bag_counts) as u32;
         output.1 -= 1;
 
         (output.0.to_string(), output.1.to_string())
     }
 }
 
-unsafe fn count_contained_bags(bag: u16) -> u16 {
-    let bags = crate::SliceWrapper(&BAGS);
-    let mut bag_counts = crate::SliceWrapperMut(&mut BAG_COUNTS);
+unsafe fn count_contained_bags(bag: u16, bags: &[u64], bag_counts: &mut [u16]) -> u16 {
+    let bags = crate::SliceWrapper(bags);
+    let mut bag_counts = crate::SliceWrapperMut(bag_counts);
 
     let mut count = 1;
     let mut bag_data = bags[bag as usize] & !(0b11 << HAS_GOLD_BIT);
@@ -154,7 +127,7 @@ unsafe fn count_contained_bags(bag: u16) -> u16 {
 
         let mut inner_count = bag_counts[inner_bag as usize];
         if inner_count == 0 {
-            inner_count = count_contained_bags(inner_bag);
+            inner_count = count_contained_bags(inner_bag, bags.0, bag_counts.0);
         }
         count += inner_multiplier * inner_count;
 
@@ -165,11 +138,14 @@ unsafe fn count_contained_bags(bag: u16) -> u16 {
     count
 }
 
-unsafe fn propagate_contains_gold(bag: u16, count: &mut u32) {
-    let mut bags = crate::SliceWrapperMut::new(&mut BAGS);
-    #[allow(clippy::transmute_ptr_to_ptr)]
-    let bags_reverse =
-        crate::SliceWrapper::<Vec<u16>>::new(std::mem::transmute(&BAGS_REVERSE as &[usize]));
+unsafe fn propagate_contains_gold(
+    bag: u16,
+    count: &mut u32,
+    bags: &mut [u64],
+    bags_reverse: &[Vec<u16>],
+) {
+    let mut bags = crate::SliceWrapperMut::new(bags);
+    let bags_reverse = crate::SliceWrapper::<Vec<u16>>::new(bags_reverse);
     for &outer_bag in &bags_reverse[bag as usize] {
         if bags[outer_bag as usize] & (1 << HAS_GOLD_BIT) != 0 {
             continue;
@@ -177,7 +153,7 @@ unsafe fn propagate_contains_gold(bag: u16, count: &mut u32) {
 
         *count += 1;
         bags[outer_bag as usize] |= 1 << HAS_GOLD_BIT;
-        propagate_contains_gold(outer_bag, count);
+        propagate_contains_gold(outer_bag, count, bags.0, bags_reverse.0);
     }
 }
 

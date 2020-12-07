@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict
-from pprint import pprint
 
 COLORS = [
     "aqua",
