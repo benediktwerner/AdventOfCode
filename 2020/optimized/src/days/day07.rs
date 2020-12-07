@@ -1,4 +1,4 @@
-use anyhow::ensure;
+use anyhow::{bail, ensure};
 
 use crate::{SliceWrapper, SliceWrapperMut};
 
@@ -22,15 +22,68 @@ impl crate::Solver for Solver {
     }
 
     fn is_input_safe(&self, input: &str) -> anyhow::Result<()> {
-        ensure!(
-            input.len() >= 2,
-            "Input is too short. (< 2 characters including newline)"
-        );
+        ensure!(input.len() >= 20, "Input is too short. (< 20 characters)");
         ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         ensure!(
             &input[input.len() - 1..] == "\n",
             "Input is missing newline at the end"
         );
+        for line in input.lines() {
+            let mut iter = line.split(" bags contain ");
+            let parts = (iter.next(), iter.next());
+            ensure!(iter.next().is_none(), "Too many values: {}", line);
+            match parts {
+                (Some(bag), Some(contains)) => {
+                    validata_bag(bag)?;
+                    ensure!(
+                        &contains[contains.len() - 1..] == ".",
+                        "Line does not end with a dot: '{}'",
+                        line
+                    );
+                    if contains == "no other bags." {
+                        continue;
+                    }
+                    let bag_count = contains.split(", ").count();
+                    ensure!(
+                        bag_count <= 4,
+                        "Bag contains more than 4 other bags: '{}'",
+                        line
+                    );
+                    for contained_bag in contains[..contains.len() - 1].split(", ") {
+                        let mut count = contained_bag.as_bytes()[0];
+                        ensure!(
+                            b'1' <= count && count <= b'9',
+                            "Count is not a valid digit: '{}' in '{}'",
+                            count as char,
+                            contained_bag
+                        );
+                        ensure!(
+                            contained_bag.as_bytes()[1] == b' ',
+                            "No space after count: '{}'",
+                            contained_bag
+                        );
+                        count -= b'0';
+                        let cutoff = if count > 1 {
+                            ensure!(
+                                &contained_bag[contained_bag.len() - 5..] == " bags",
+                                "Expected 'bags': '{}",
+                                contained_bag
+                            );
+                            5
+                        } else {
+                            ensure!(
+                                &contained_bag[contained_bag.len() - 4..] == " bag",
+                                "Expected 'bag': '{}",
+                                contained_bag
+                            );
+                            4
+                        };
+                        validata_bag(&contained_bag[2..contained_bag.len() - cutoff])?;
+                    }
+                }
+                _ => bail!("Invalid line: {}", line),
+            }
+        }
         Ok(())
     }
 
@@ -265,4 +318,30 @@ unsafe fn parse_attribute(bytes: &[u8]) -> (u16, u32) {
         b'v' => (17, 7), // vibrant
         _ => (18, 4),    // wavy
     }
+}
+
+fn validata_bag(bag: &str) -> anyhow::Result<()> {
+    let mut iter = bag.split(' ');
+    let parts = (iter.next(), iter.next());
+    ensure!(iter.next().is_none(), "Too many values for bag: {}", bag);
+    match parts {
+        (Some(attr), Some(color)) => {
+            match attr {
+                "bright" | "clear" | "dark" | "dim" | "dotted" | "drab" | "dull" | "faded"
+                | "light" | "mirrored" | "muted" | "pale" | "plaid" | "posh" | "shiny"
+                | "striped" | "vibrant" | "wavy" => (),
+                _ => bail!("Invalid bag attribute: '{}'", attr),
+            }
+            match color {
+                "aqua" | "beige" | "black" | "blue" | "bronze" | "brown" | "chartreuse"
+                | "coral" | "crimson" | "cyan" | "fuchsia" | "gold" | "gray" | "green"
+                | "indigo" | "lavender" | "lime" | "magenta" | "maroon" | "olive" | "orange"
+                | "plum" | "purple" | "red" | "salmon" | "silver" | "tan" | "teal" | "tomato"
+                | "turquoise" | "violet" | "white" | "yellow" => (),
+                _ => bail!("Invalid bag color: '{}'", color),
+            }
+        }
+        _ => bail!("Invalid bag: {}", bag),
+    }
+    Ok(())
 }
