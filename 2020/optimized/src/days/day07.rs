@@ -101,16 +101,16 @@ impl crate::Solver for Solver {
             }
         }
 
-        let mut bag_counts = [0_u16; 2048];
+        let mut bag_counts = [0_u32; 2048];
 
-        output.1 = count_contained_bags(SHINY_GOLD, bags.0, &mut bag_counts) as u32;
+        output.1 = count_contained_bags(SHINY_GOLD, bags.0, &mut bag_counts);
         output.1 -= 1;
 
         (output.0.to_string(), output.1.to_string())
     }
 }
 
-unsafe fn count_contained_bags(bag: u16, bags: &[u64], bag_counts: &mut [u16]) -> u16 {
+unsafe fn count_contained_bags(bag: u16, bags: &[u64], bag_counts: &mut [u32]) -> u32 {
     let bags = crate::SliceWrapper(bags);
     let mut bag_counts = crate::SliceWrapperMut(bag_counts);
 
@@ -122,7 +122,7 @@ unsafe fn count_contained_bags(bag: u16, bags: &[u64], bag_counts: &mut [u16]) -
             break;
         }
 
-        let inner_multiplier = (inner >> 11) as u16;
+        let inner_multiplier = (inner >> 11) as u32;
         let inner_bag = (inner & ((1 << 11) - 1)) as u16;
 
         let mut inner_count = bag_counts[inner_bag as usize];
