@@ -22,7 +22,10 @@ impl crate::Solver for Solver {
             input.len() % 11 == 0,
             "Input length is not a multiple of 11"
         );
-        ensure!(input.len() % 44 == 0, "Input length is not a multiple of 44");
+        ensure!(
+            input.len() % 44 == 0,
+            "Input length is not a multiple of 44"
+        );
         ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         for i in 0..input.len() / 11 {
             ensure!(
@@ -57,14 +60,14 @@ impl crate::Solver for Solver {
         let end_ptr = ptr.add(input.len());
 
         while ptr < end_ptr {
-            let (a,b) = parse2(ptr);
+            let (a, b) = parse2(ptr);
             sum += a + b;
             min = min.min(a).min(b);
             max = max.max(a).max(b);
 
             ptr = ptr.add(11);
 
-            let (a,b) = parse2(ptr);
+            let (a, b) = parse2(ptr);
             sum += a + b;
             min = min.min(a).min(b);
             max = max.max(a).max(b);
