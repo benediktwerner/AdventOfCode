@@ -1,6 +1,8 @@
 use anyhow::ensure;
 
-const SHINY_GOLD: u16 = (11 << 5) | 14;
+use crate::{SliceWrapper, SliceWrapperMut};
+
+const SHINY_GOLD: u16 = (12 << 5) | 15;
 const HAS_GOLD_BIT: u64 = 63;
 const BAG_SHIFT: u64 = 15;
 
@@ -45,13 +47,13 @@ impl crate::Solver for Solver {
         //  every 15 bits at 0, 15, 30, and 45 are contained bags
         //    11 (low) bits bag number and 4 (high) bits count
         let mut bags = [0_u64; 2048];
-        let mut bags = crate::SliceWrapperMut::new(&mut bags);
+        let mut bags = SliceWrapperMut::new(&mut bags);
 
         let vec_init: [usize; 3] = std::mem::transmute(Vec::<u16>::new());
         let mut bags_reverse: [Vec<u16>; 2048] = std::mem::transmute([vec_init; 2048]);
-        let mut bags_reverse = crate::SliceWrapperMut::<Vec<u16>>::new(&mut bags_reverse);
+        let mut bags_reverse = SliceWrapperMut::<Vec<u16>>::new(&mut bags_reverse);
 
-        let bytes = crate::SliceWrapper::new(input.as_bytes());
+        let bytes = SliceWrapper::new(input.as_bytes());
         let mut i = 0;
 
         loop {
@@ -95,7 +97,12 @@ impl crate::Solver for Solver {
                 if has_gold {
                     bags[bag as usize] |= 1 << HAS_GOLD_BIT;
                     output.0 += 1;
-                    propagate_contains_gold(bag, &mut output.0, bags.0, bags_reverse.0);
+                    propagate_contains_gold(
+                        bag,
+                        &mut output.0,
+                        bags.0,
+                        SliceWrapper::new(bags_reverse.0),
+                    );
                 }
             }
 
@@ -114,8 +121,8 @@ impl crate::Solver for Solver {
 }
 
 unsafe fn count_contained_bags(bag: u16, bags: &[u64], bag_counts: &mut [u32]) -> u32 {
-    let bags = crate::SliceWrapper(bags);
-    let mut bag_counts = crate::SliceWrapperMut(bag_counts);
+    let bags = SliceWrapper(bags);
+    let mut bag_counts = SliceWrapperMut(bag_counts);
 
     let mut count = 1;
     let mut bag_data = bags[bag as usize] & !(1 << HAS_GOLD_BIT);
@@ -145,10 +152,9 @@ unsafe fn propagate_contains_gold(
     bag: u16,
     count: &mut u32,
     bags: &mut [u64],
-    bags_reverse: &[Vec<u16>],
+    bags_reverse: SliceWrapper<Vec<u16>>,
 ) {
-    let mut bags = crate::SliceWrapperMut::new(bags);
-    let bags_reverse = crate::SliceWrapper::<Vec<u16>>::new(bags_reverse);
+    let mut bags = SliceWrapperMut::new(bags);
     for &outer_bag in &bags_reverse[bag as usize] {
         if bags[outer_bag as usize] & (1 << HAS_GOLD_BIT) != 0 {
             continue;
@@ -156,12 +162,12 @@ unsafe fn propagate_contains_gold(
 
         *count += 1;
         bags[outer_bag as usize] |= 1 << HAS_GOLD_BIT;
-        propagate_contains_gold(outer_bag, count, bags.0, bags_reverse.0);
+        propagate_contains_gold(outer_bag, count, bags.0, bags_reverse);
     }
 }
 
 #[inline(always)]
-unsafe fn parse_bag(bytes: crate::SliceWrapper<u8>, i: &mut u32) -> u16 {
+unsafe fn parse_bag(bytes: SliceWrapper<u8>, i: &mut u32) -> u16 {
     let (attr, len) = parse_attribute(&bytes[*i as usize..]);
     *i += len + 1;
     let (color, len) = parse_color(&bytes[*i as usize..]);
@@ -172,91 +178,91 @@ unsafe fn parse_bag(bytes: crate::SliceWrapper<u8>, i: &mut u32) -> u16 {
 
 #[inline(always)]
 unsafe fn parse_color(bytes: &[u8]) -> (u16, u32) {
-    let bytes = crate::SliceWrapper::new(bytes);
+    let bytes = SliceWrapper::new(bytes);
     match bytes[0] {
-        b'a' => (0, 4), // aqua
+        b'a' => (1, 4), // aqua
         b'b' => match bytes[3] {
-            b'g' => (1, 5), // beige
-            b'c' => (2, 5), // black
-            b'e' => (3, 4), // blue
-            b'n' => (4, 6), // bronze
-            _ => (5, 5),    // brown
+            b'g' => (2, 5), // beige
+            b'c' => (3, 5), // black
+            b'e' => (4, 4), // blue
+            b'n' => (5, 6), // bronze
+            _ => (6, 5),    // brown
         },
         b'c' => match bytes[1] {
-            b'h' => (6, 10), // chartreuse
-            b'o' => (7, 5),  // coral
-            b'r' => (8, 7),  // crimson
-            _ => (9, 4),     // cyan
+            b'h' => (7, 10), // chartreuse
+            b'o' => (8, 5),  // coral
+            b'r' => (9, 7),  // crimson
+            _ => (10, 4),    // cyan
         },
-        b'f' => (10, 7), // fuchsia
+        b'f' => (11, 7), // fuchsia
         b'g' => match bytes[2] {
-            b'l' => (11, 4), // gold
-            b'a' => (12, 4), // gray
-            _ => (13, 5),    // green
+            b'l' => (12, 4), // gold
+            b'a' => (13, 4), // gray
+            _ => (14, 5),    // green
         },
-        b'i' => (14, 6), // indigo
+        b'i' => (15, 6), // indigo
         b'l' => match bytes[1] {
-            b'a' => (15, 8), // lavender
-            _ => (16, 4),    // lime
+            b'a' => (16, 8), // lavender
+            _ => (17, 4),    // lime
         },
         b'm' => match bytes[2] {
-            b'g' => (17, 7), // magenta
-            _ => (18, 6),    // maroon
+            b'g' => (18, 7), // magenta
+            _ => (19, 6),    // maroon
         },
         b'o' => match bytes[1] {
-            b'l' => (19, 5), // olive
-            _ => (20, 6),    // orange
+            b'l' => (20, 5), // olive
+            _ => (21, 6),    // orange
         },
         b'p' => match bytes[1] {
-            b'l' => (21, 4), // plum
-            _ => (22, 6),    // purple
+            b'l' => (22, 4), // plum
+            _ => (23, 6),    // purple
         },
-        b'r' => (23, 3), // red
+        b'r' => (24, 3), // red
         b's' => match bytes[1] {
-            b'a' => (24, 6), // salmon
-            _ => (25, 6),    // silver
+            b'a' => (25, 6), // salmon
+            _ => (26, 6),    // silver
         },
         b't' => match bytes[1] {
-            b'a' => (26, 3), // tan
-            b'e' => (27, 4), // teal
-            b'o' => (28, 6), // tomato
-            _ => (29, 9),    // turquoise
+            b'a' => (27, 3), // tan
+            b'e' => (28, 4), // teal
+            b'o' => (29, 6), // tomato
+            _ => (30, 9),    // turquoise
         },
-        b'v' => (30, 6), // violet
-        b'w' => (31, 5), // white
-        _ => (32, 6),    // yellow
+        b'v' => (31, 6), // violet
+        b'w' => (32, 5), // white
+        _ => (33, 6),    // yellow
     }
 }
 
 #[inline(always)]
 unsafe fn parse_attribute(bytes: &[u8]) -> (u16, u32) {
-    let bytes = crate::SliceWrapper::new(bytes);
+    let bytes = SliceWrapper::new(bytes);
     match bytes[0] {
-        b'b' => (0, 6), // bright
-        b'c' => (1, 5), // clear
+        b'b' => (1, 6), // bright
+        b'c' => (2, 5), // clear
         b'd' => match bytes[1] {
-            b'a' => (2, 4), // dark
-            b'i' => (3, 3), // dim
-            b'o' => (4, 6), // dotted
-            b'r' => (5, 4), // drab
-            _ => (6, 4),    // dull
+            b'a' => (3, 4), // dark
+            b'i' => (4, 3), // dim
+            b'o' => (5, 6), // dotted
+            b'r' => (6, 4), // drab
+            _ => (7, 4),    // dull
         },
-        b'f' => (7, 5), // faded
-        b'l' => (8, 5), // light
+        b'f' => (8, 5), // faded
+        b'l' => (9, 5), // light
         b'm' => match bytes[1] {
-            b'i' => (9, 8), // mirrored
-            _ => (10, 5),   // muted
+            b'i' => (10, 8), // mirrored
+            _ => (11, 5),    // muted
         },
         b'p' => match bytes[1] {
-            b'a' => (11, 4), // pale
-            b'l' => (12, 5), // plaid
-            _ => (13, 4),    // posh
+            b'a' => (12, 4), // pale
+            b'l' => (13, 5), // plaid
+            _ => (14, 4),    // posh
         },
         b's' => match bytes[1] {
-            b'h' => (14, 5), // shiny
-            _ => (15, 7),    // striped
+            b'h' => (15, 5), // shiny
+            _ => (16, 7),    // striped
         },
-        b'v' => (16, 7), // vibrant
-        _ => (17, 4),    // wavy
+        b'v' => (17, 7), // vibrant
+        _ => (18, 4),    // wavy
     }
 }

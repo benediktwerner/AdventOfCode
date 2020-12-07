@@ -122,7 +122,7 @@ def print_grouping(grouping, indent=-1, result=0):
     return result
 
 
-def print_grouping_code(grouping, indent=0, result=0):
+def print_grouping_code(grouping, indent=0, result=1):
     index, groups = grouping
     print(f"match bytes[{index}] {{", sep="")
     indent += 4
