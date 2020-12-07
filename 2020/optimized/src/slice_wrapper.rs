@@ -42,7 +42,8 @@ macro_rules! impl_index_mut {
 
 #[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct SliceWrapper<'a, T>(&'a [T]);
+#[non_exhaustive]
+pub struct SliceWrapper<'a, T>(pub &'a [T]);
 
 impl<'a, T> SliceWrapper<'a, T> {
     /// # Safety
@@ -51,16 +52,30 @@ impl<'a, T> SliceWrapper<'a, T> {
     pub unsafe fn new(slice: &'a [T]) -> Self {
         Self(slice)
     }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
 }
 
 impl_index!(usize, SliceWrapper<'a, T>, 'a, T);
 impl_index!(std::ops::Range<usize>, SliceWrapper<'a, T>, 'a, T);
+impl_index!(std::ops::RangeFrom<usize>, SliceWrapper<'a, T>, 'a, T);
 
 impl<'a, T> std::ops::Index<u32> for SliceWrapper<'a, T> {
     type Output = T;
 
     #[inline(always)]
     fn index(&self, index: u32) -> &Self::Output {
+        self.index(index as usize)
+    }
+}
+
+impl<'a, T> std::ops::Index<i32> for SliceWrapper<'a, T> {
+    type Output = T;
+
+    #[inline(always)]
+    fn index(&self, index: i32) -> &Self::Output {
         self.index(index as usize)
     }
 }
@@ -74,16 +89,9 @@ impl<'a, T> std::ops::Index<std::ops::Range<u32>> for SliceWrapper<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::Deref for SliceWrapper<'a, T> {
-    type Target = [T];
-
-    fn deref(&self) -> &Self::Target {
-        self.0
-    }
-}
-
 #[repr(transparent)]
-pub struct SliceWrapperMut<'a, T>(&'a mut [T]);
+#[non_exhaustive]
+pub struct SliceWrapperMut<'a, T>(pub &'a mut [T]);
 
 impl<'a, T> SliceWrapperMut<'a, T> {
     /// # Safety
@@ -92,21 +100,11 @@ impl<'a, T> SliceWrapperMut<'a, T> {
     pub unsafe fn new(slice: &'a mut [T]) -> Self {
         Self(slice)
     }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
 }
 
 impl_index!(usize, SliceWrapperMut<'a, T>, 'a, T);
 impl_index_mut!(usize, SliceWrapperMut<'a, T>, 'a, T);
-
-impl<'a, T> std::ops::Deref for SliceWrapperMut<'a, T> {
-    type Target = [T];
-
-    fn deref(&self) -> &Self::Target {
-        self.0
-    }
-}
-
-impl<'a, T> std::ops::DerefMut for SliceWrapperMut<'a, T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.0
-    }
-}
