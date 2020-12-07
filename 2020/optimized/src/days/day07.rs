@@ -1,8 +1,8 @@
 use anyhow::ensure;
 
 const SHINY_GOLD: u16 = (11 << 5) | 14;
-const PARSED_BIT: u64 = 63;
-const HAS_GOLD_BIT: u64 = 62;
+const HAS_GOLD_BIT: u64 = 63;
+const BAG_SHIFT: u64 = 15;
 
 pub struct Solver(());
 
@@ -36,8 +36,7 @@ impl crate::Solver for Solver {
         let mut output = (0, 0);
 
         // info for bag i is at bags[i]
-        //  63. bit set => bag rule was parsed
-        //  62. bit set => bag contains golden bag
+        //  63. bit set => bag contains golden bag
         //  every 15 bits at 0, 15, 30, and 45 are contained bags
         //    11 (low) bits bag number and 4 (high) bits count
         let mut bags = [0_u64; 2048];
@@ -81,7 +80,7 @@ impl crate::Solver for Solver {
                         break;
                     }
 
-                    inner_shift += 15;
+                    inner_shift += BAG_SHIFT;
                 }
 
                 if has_gold {
@@ -93,8 +92,6 @@ impl crate::Solver for Solver {
                 // skip "no other bags.\n"
                 i += 15;
             }
-
-            bags[bag as usize] |= 1 << PARSED_BIT;
 
             if i as usize >= input.len() {
                 break;
@@ -115,9 +112,9 @@ unsafe fn count_contained_bags(bag: u16, bags: &[u64], bag_counts: &mut [u32]) -
     let mut bag_counts = crate::SliceWrapperMut(bag_counts);
 
     let mut count = 1;
-    let mut bag_data = bags[bag as usize] & !(0b11 << HAS_GOLD_BIT);
+    let mut bag_data = bags[bag as usize] & !(1 << HAS_GOLD_BIT);
     loop {
-        let inner = bag_data & ((1 << 15) - 1);
+        let inner = bag_data & ((1 << BAG_SHIFT) - 1);
         if inner == 0 {
             break;
         }
@@ -131,7 +128,7 @@ unsafe fn count_contained_bags(bag: u16, bags: &[u64], bag_counts: &mut [u32]) -
         }
         count += inner_multiplier * inner_count;
 
-        bag_data >>= 15;
+        bag_data >>= BAG_SHIFT;
     }
 
     bag_counts[bag as usize] = count;
