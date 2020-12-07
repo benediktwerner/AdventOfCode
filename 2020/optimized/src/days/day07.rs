@@ -35,6 +35,11 @@ impl crate::Solver for Solver {
     unsafe fn solve(&self, input: &str) -> (String, String) {
         let mut output = (0, 0);
 
+        // bags are represented by a u16
+        //  lower 5 bits are attribute (dim, shiny, striped, etc.)
+        //  next 6 bits are color (red, green, etc.)
+        //  last 5 bits are unused
+
         // info for bag i is at bags[i]
         //  63. bit set => bag contains golden bag
         //  every 15 bits at 0, 15, 30, and 45 are contained bags
@@ -42,7 +47,7 @@ impl crate::Solver for Solver {
         let mut bags = [0_u64; 2048];
         let mut bags = crate::SliceWrapperMut::new(&mut bags);
 
-        let vec_init = std::mem::transmute::<Vec<u16>, [usize; 3]>(Vec::new());
+        let vec_init: [usize; 3] = std::mem::transmute(Vec::<u16>::new());
         let mut bags_reverse: [Vec<u16>; 2048] = std::mem::transmute([vec_init; 2048]);
         let mut bags_reverse = crate::SliceWrapperMut::<Vec<u16>>::new(&mut bags_reverse);
 
@@ -51,18 +56,21 @@ impl crate::Solver for Solver {
 
         loop {
             let bag = parse_bag(bytes, &mut i);
-            // skip " bags contain "
-            i += 14;
+
+            i += 14; // skip " bags contain "
 
             let mut has_gold = false;
             let mut inner_shift = 0;
 
-            if bytes[i] != b'n' {
+            if bytes[i] == b'n' {
+                // bag contains no other bags
+                i += 15; // skip "no other bags.\n"
+            } else {
                 loop {
                     let count = bytes[i] - b'0';
                     i += 2;
                     let inner_bag = parse_bag(bytes, &mut i);
-                    i += 4 + (count > 1) as u32;
+                    i += 4 + (count > 1) as u32; // skip " bag" or " bags"
 
                     let count = (count as u16) << 11;
                     bags[bag as usize] |= ((count | inner_bag) as u64) << inner_shift;
@@ -75,7 +83,8 @@ impl crate::Solver for Solver {
 
                     bags_reverse[inner_bag as usize].push(bag);
 
-                    i += 2;
+                    i += 2; // skip ", " or ".\n"
+
                     if bytes[i - 2] == b'.' {
                         break;
                     }
@@ -88,9 +97,6 @@ impl crate::Solver for Solver {
                     output.0 += 1;
                     propagate_contains_gold(bag, &mut output.0, bags.0, bags_reverse.0);
                 }
-            } else {
-                // skip "no other bags.\n"
-                i += 15;
             }
 
             if i as usize >= input.len() {
