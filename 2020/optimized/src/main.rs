@@ -19,8 +19,8 @@ pub trait Solver {
     /// This method is safe to call only if `self.is_input_safe(input)` returned `Ok(true)`
     unsafe fn solve(&self, input: &str) -> (String, String);
 
-    fn get_input(&self) -> anyhow::Result<String> {
-        let path = input_path(self.day());
+    fn get_input(&self, directory: Option<&str>) -> anyhow::Result<String> {
+        let path = input_path(self.day(), directory);
         let input_string = match std::fs::read_to_string(path) {
             Ok(inp) => add_newline(inp.replace("\r", "")),
             Err(error) => {
@@ -35,10 +35,14 @@ pub trait Solver {
     }
 }
 
-fn input_path(day: u8) -> std::path::PathBuf {
-    Path::new("..")
-        .join(format!("day{:02}", day))
-        .join("input.txt")
+fn input_path(day: u8, directory: Option<&str>) -> std::path::PathBuf {
+    if let Some(dir) = directory {
+        Path::new(dir).join(format!("day{:02}.txt", day))
+    } else {
+        Path::new("..")
+            .join(format!("day{:02}", day))
+            .join("input.txt")
+    }
 }
 
 fn add_newline(mut inp: String) -> String {
@@ -52,6 +56,7 @@ fn benchmark(
     solver: &dyn Solver,
     expected: Option<(u32, u32)>,
     iterations: Option<u64>,
+    input_directory: Option<&str>,
 ) -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     const ITERATIONS: u64 = 1;
@@ -67,7 +72,7 @@ fn benchmark(
     }
     println!();
 
-    let inp = &solver.get_input()?;
+    let inp = &solver.get_input(input_directory)?;
     let mut out = Default::default();
 
     let start = Instant::now();
@@ -100,6 +105,7 @@ fn benchmark_all(
     solvers: Vec<Box<dyn Solver>>,
     expected: &[(u32, u32)],
     iterations: Option<u64>,
+    input_directory: Option<&str>,
 ) -> anyhow::Result<()> {
     #[cfg(debug_assertions)]
     const ITERATIONS: u64 = 1;
@@ -121,7 +127,7 @@ fn benchmark_all(
     let mut cycles_sum = 0;
 
     for solver in &solvers {
-        let input = solver.get_input()?;
+        let input = solver.get_input(input_directory)?;
         let mut out = Default::default();
 
         let start = Instant::now();
@@ -184,44 +190,111 @@ fn benchmark_all(
     Ok(())
 }
 
-static EXPECTED: [(u32, u32); 7] = [
-    (1015476, 200878544),
-    (439, 584),
-    (167, 736527114),
-    (192, 101),
-    (938, 696),
-    (7027, 3579),
-    (289, 30055),
-];
+fn parse_expected(path: impl AsRef<Path>) -> Option<Vec<(u32, u32)>> {
+    let mut result = Vec::new();
+    let path = path.as_ref();
+
+    let content = match std::fs::read_to_string(path) {
+        Ok(x) => x,
+        Err(error) => {
+            eprintln!("Failed to read '{:?}': {}", path, error);
+            return None;
+        }
+    };
+
+    for (i, line) in content.lines().enumerate() {
+        let mut iter = line.split_whitespace();
+        match (iter.next(), iter.next()) {
+            (Some(a), Some(b)) => {
+                let a = match a.parse::<u32>() {
+                    Ok(x) => x,
+                    Err(error) => {
+                        eprintln!("Failed to parse '{:?}':{}: {}\n", path, i, error);
+                        return None;
+                    }
+                };
+                let b = match b.parse::<u32>() {
+                    Ok(x) => x,
+                    Err(error) => {
+                        eprintln!("Failed to parse '{:?}':{}: {}\n", path, i, error);
+                        return None;
+                    }
+                };
+                result.push((a, b));
+            }
+            _ => {
+                eprintln!(
+                    "Failed to parse '{:?}':{}: Expected two space separated values\n",
+                    path, i
+                );
+                return None;
+            }
+        }
+    }
+    Some(result)
+}
+
+fn get_expected(dir: Option<&str>, path: &str) -> Option<Vec<(u32, u32)>> {
+    if let Some(dir) = dir {
+        let path = Path::new(dir).join(path);
+        if path.is_file() {
+            parse_expected(&path)
+        } else {
+            None
+        }
+    } else if Path::new(path).is_file() {
+        parse_expected(path)
+    } else {
+        None
+    }
+}
 
 fn run() -> anyhow::Result<()> {
     let args = App::new("aoc-optimized")
-        .arg(Arg::with_name("all").long("all").help("Benchmark all"))
+        .arg(Arg::with_name("all").long("all").short("a").help("Benchmark all days"))
         .arg(
             Arg::with_name("iterations")
                 .long("iterations")
                 .alias("iters")
                 .short("i")
-                .takes_value(true),
+                .takes_value(true)
+                .help("Number of iterations between timings")
         )
         .arg(
             Arg::with_name("day")
                 .long("day")
+                .short("d")
                 .takes_value(true)
                 .help("Benchmark a single day"),
         )
         .arg(
             Arg::with_name("no-check-results")
                 .long("no-check-results")
-                .help("Don't validate results"),
+                .help("Don't check if results are correct"),
+        )
+        .arg(
+            Arg::with_name("input-directory")
+                .long("input-directory")
+                .takes_value(true)
+                .value_name("DIR")
+                .help("Directory for inputs. Inputs are expected as dayXX.txt. Expected output can optionally be provided in `expected.txt` or using --expected-file"),
+        )
+        .arg(
+            Arg::with_name("expected-file")
+                .long("expected-file")
+                .takes_value(true)
+                .value_name("FILE")
+                .help("File for expected inputs. Defaults to expected.txt"),
         )
         .get_matches();
 
-    let solvers = get_solvers();
-    let expected: &[(u32, u32)] = if args.is_present("no-check-results") {
-        Default::default()
+    let input_dir = args.value_of("input-directory");
+    let expected_file = args.value_of("expected-file").unwrap_or("expected.txt");
+
+    let expected = if args.is_present("no-check-results") {
+        Vec::new()
     } else {
-        &EXPECTED
+        get_expected(input_dir, expected_file).unwrap_or_default()
     };
 
     let iterations = if let Some(iters) = args.value_of("iterations") {
@@ -234,8 +307,9 @@ fn run() -> anyhow::Result<()> {
         None
     };
 
+    let solvers = get_solvers();
     if args.is_present("all") {
-        benchmark_all(solvers, expected, iterations)
+        benchmark_all(solvers, &expected, iterations, input_dir)
     } else if let Some(day) = args.value_of("day") {
         let day = day.parse::<usize>().context("Day is not a valid number")?;
         ensure!(
@@ -247,10 +321,16 @@ fn run() -> anyhow::Result<()> {
             &*solvers[day - 1],
             expected.get(day - 1).copied(),
             iterations,
+            input_dir,
         )
     } else {
         let day = solvers.len() - 1;
-        benchmark(&*solvers[day], expected.get(day).copied(), iterations)
+        benchmark(
+            &*solvers[day],
+            expected.get(day).copied(),
+            iterations,
+            input_dir,
+        )
     }
 }
 
