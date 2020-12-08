@@ -17,16 +17,18 @@ fn thousand_separated(n: u128) -> String {
     result
 }
 
-pub fn format_duration(nanos: u128) -> String {
-    let nanos_sep = thousand_separated(nanos);
+pub fn format_duration(nanos: u128) -> (String, String) {
+    let nanos_sep = format!("{}ns", thousand_separated(nanos));
 
-    if nanos > 1_000_000_000 {
-        format!("{}ns = {:.3}s", nanos_sep, nanos as f64 / 1_000_000_000_f64)
+    let other = if nanos > 1_000_000_000 {
+        format!("{:.2}s", nanos as f64 / 1_000_000_000_f64)
     } else if nanos > 1_000_000 {
-        format!("{}ns = {:.3}ms", nanos_sep, nanos as f64 / 1_000_000_f64)
+        format!("{:.2}ms", nanos as f64 / 1_000_000_f64)
     } else if nanos > 1_000 {
-        format!("{}ns = {:.3}us", nanos_sep, nanos as f64 / 1_000_f64)
+        format!("{:.2}us", nanos as f64 / 1_000_f64)
     } else {
-        format!("{}ns", nanos_sep)
-    }
+        nanos_sep.clone()
+    };
+
+    (nanos_sep, other)
 }
