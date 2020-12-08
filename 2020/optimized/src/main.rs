@@ -76,7 +76,7 @@ fn benchmark(
         out = unsafe { solver.solve(inp) };
     }
     let endc = unsafe { std::arch::x86_64::_rdtsc() };
-    let end = Instant::now();
+    let duration = start.elapsed();
 
     if let Some(expected) = expected {
         let expected = (expected.0.to_string(), expected.1.to_string());
@@ -88,8 +88,7 @@ fn benchmark(
         );
     }
 
-    let (nanos, time) =
-        utils::format_duration(end.duration_since(start).as_nanos() / iterations as u128);
+    let (nanos, time) = utils::format_duration(duration.as_nanos() / iterations as u128);
 
     println!("Cylcles: {}", (endc - startc) / iterations);
     println!("Time: {} = {}", nanos, time);
@@ -131,9 +130,9 @@ fn benchmark_all(
             out = unsafe { solver.solve(&input) };
         }
         let endc = unsafe { std::arch::x86_64::_rdtsc() };
-        let end = Instant::now();
+        let duration = start.elapsed();
 
-        let nanos = end.duration_since(start).as_nanos() / iterations as u128;
+        let nanos = duration.as_nanos() / iterations as u128;
         let time = utils::format_duration(nanos);
         let cycles = (endc - startc) / iterations;
 
@@ -176,9 +175,9 @@ fn benchmark_all(
             }
         }
     }
-    let end = Instant::now();
+    let duration = start.elapsed();
 
-    let nanos = end.duration_since(start).as_nanos() / iterations as u128;
+    let nanos = duration.as_nanos() / iterations as u128;
     let (nanos, time) = utils::format_duration(nanos);
     println!("\nEverything together: {} = {}\n", nanos, time);
 
@@ -197,8 +196,14 @@ static EXPECTED: [(u32, u32); 7] = [
 
 fn run() -> anyhow::Result<()> {
     let args = App::new("aoc-optimized")
-    .arg(Arg::with_name("all").long("all").help("Benchmark all"))
-    .arg(Arg::with_name("iterations").long("iterations").alias("iters").short("i").takes_value(true))
+        .arg(Arg::with_name("all").long("all").help("Benchmark all"))
+        .arg(
+            Arg::with_name("iterations")
+                .long("iterations")
+                .alias("iters")
+                .short("i")
+                .takes_value(true),
+        )
         .arg(
             Arg::with_name("day")
                 .long("day")
