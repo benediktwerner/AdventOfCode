@@ -83,3 +83,15 @@ We can also already partially compute part 1 during parsing.
 Rest is pretty standard memoized graph search, although we can use fixed-size arrays instead of hash-maps.
 
 With 13 bits we can only have 2048 different bags.
+
+Could be improved by assuming that no bag is contained directly by more than 20 (or some higher fixed numer) other bags.
+This would allow the usage of a fixed size array instead of a `Vec` which reduces runtime by roughly 50%.
+
+### Day 8
+
+For part 2 we execute as normal and mark visited instructions but during usual execution reaching an already visited
+instruction is ignored. But on every `nop` or `jmp` we first try to execute with it flipped, also marking visited
+instructions but terminating and back-tracking when reaching an already marked instruction. When we instead reach
+the end during this we are done.
+
+Could maybe be improved by assuming you always need to flip a `jmp -XXX` which seems to be true for all official inputs.

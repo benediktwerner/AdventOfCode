@@ -275,6 +275,7 @@ fn run() -> anyhow::Result<()> {
         .arg(
             Arg::with_name("input-directory")
                 .long("input-directory")
+                .alias("input-dir")
                 .takes_value(true)
                 .value_name("DIR")
                 .help("Directory for inputs. Inputs are expected as dayXX.txt. Expected output can optionally be provided in `expected.txt` or using --expected-file"),

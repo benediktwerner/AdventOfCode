@@ -114,3 +114,9 @@ impl<'a, T> SliceWrapperMut<'a, T> {
 
 impl_index!(usize, SliceWrapperMut<'a, T>, 'a, T);
 impl_index_mut!(usize, SliceWrapperMut<'a, T>, 'a, T);
+impl_index!(std::ops::Range<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index_mut!(std::ops::Range<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index!(std::ops::RangeFrom<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index_mut!(std::ops::RangeFrom<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index!(std::ops::RangeTo<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index_mut!(std::ops::RangeTo<usize>, SliceWrapperMut<'a, T>, 'a, T);
