@@ -24,12 +24,20 @@ def rega(pattern, string):
     pattern = pattern.replace("\x81", "$")
     return re.findall(pattern, string)
 
-def out(result):
+
+def solve(inp):
+    for line in inp.splitlines():
+        line = line.strip()
+
+
+
+example = """\
+
+"""
+
+print("Example:", solve(example))
+
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
     print("Output:", result)
     pyperclip.copy(str(result))
     print("Copied to clipboard")
-
-
-with open(path.join(path.dirname(__file__), "input.txt")) as f:
-    for line in f:
-        line = line.strip()
