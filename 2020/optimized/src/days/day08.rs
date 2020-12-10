@@ -47,10 +47,10 @@ impl crate::Solver for Solver {
                 "Expected + or - to start argument: '{}'",
                 line
             );
-            match &line[5..].parse::<u32>() {
+            match line[5..].parse::<u32>() {
                 Ok(arg) => {
-                    ensure!(*arg <= 999, "Argument too large: '{}'", arg);
-                    let mut arg = *arg as i32;
+                    ensure!(arg <= 999, "Argument too large: '{}'", arg);
+                    let mut arg = arg as i32;
                     if &line[4..5] == "-" {
                         arg *= -1;
                     }
@@ -121,9 +121,7 @@ impl crate::Solver for Solver {
         // code.push((1, 0, 0));
         code[len] = std::mem::MaybeUninit::new((1, 0, 0));
 
-        let mut code = SliceWrapperMut::<(u8, u8, i16)>::new(
-            &mut *(&mut code[..len] as *mut [std::mem::MaybeUninit<_>] as *mut _),
-        );
+        let mut code = code.assume_init_mut(len);
         // let mut code = SliceWrapperMut::new(&mut code);
 
         let mut acc = 0;
