@@ -12,6 +12,7 @@ panic = "abort"
 [dependencies]
 anyhow = "1.0"
 clap = "2"
+rustc-hash = "1.1"
 # regex = "*"
 # libc = "0.2"
 

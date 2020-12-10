@@ -1,4 +1,5 @@
 use anyhow::ensure;
+use rustc_hash::FxHashSet;
 
 use crate::{SliceWrapper, SliceWrapperMut};
 
@@ -44,12 +45,14 @@ impl crate::Solver for Solver {
         let bytes = SliceWrapper::new(input.as_bytes());
         let mut numbers = [0; 1024];
         let mut numbers = SliceWrapperMut::new(&mut numbers);
+        let mut last25 = FxHashSet::with_capacity_and_hasher(25, Default::default());
         let mut num = 0;
         let mut len = 0;
         let mut i = 0;
 
         for _ in 0..25 {
             num = parse_number(bytes, &mut i);
+            last25.insert(num);
             numbers[len] = num;
             len += 1;
             i += 1;
@@ -58,10 +61,12 @@ impl crate::Solver for Solver {
         while i < bytes.len() {
             num = parse_number(bytes, &mut i);
 
-            if check_last_25(numbers.0, len, num) {
+            if check_last_25(numbers.0, &last25, len, num) {
                 break;
             }
 
+            last25.remove(&numbers[len - 25]);
+            last25.insert(num);
             numbers[len] = num;
             len += 1;
             i += 1;
@@ -110,13 +115,12 @@ fn parse_number(bytes: SliceWrapper<u8>, i: &mut usize) -> u64 {
 }
 
 #[inline(always)]
-unsafe fn check_last_25(numbers: &[u64], i: usize, num: u64) -> bool {
+unsafe fn check_last_25(numbers: &[u64], last25: &FxHashSet<u64>, i: usize, num: u64) -> bool {
     let numbers = SliceWrapper::new(numbers);
     for j in i - 25..i {
-        for k in j + 1..i {
-            if numbers[j] + numbers[k] == num {
-                return false;
-            }
+        let needed = num - numbers[j];
+        if last25.contains(&needed) {
+            return false;
         }
     }
     true
