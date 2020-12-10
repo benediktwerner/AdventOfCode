@@ -147,4 +147,32 @@ def print_grouping_code(grouping, indent=0, result=1):
     return result
 
 
-gen(ATTRIBUTES)
+# gen(ATTRIBUTES)
+
+import struct
+MOD = 215
+
+table = []
+
+for c in COLORS:
+    h = struct.unpack("<I", c.ljust(4)[:4].encode())[0]
+    h %= MOD
+    table.append((h, c))
+
+print("// Colors")
+
+for i, (h, c) in enumerate(table, 1):
+    print(f"COLOR_TABLE[{h}] = ({i}, {len(c)}); // {c}")
+
+table = []
+
+for attr in ATTRIBUTES:
+    a = ord(attr[0]) & 0b11111
+    b = ord(attr[1]) & 0b11111
+    h = (a << 5) | b
+    table.append((h, attr))
+
+print("// Attributes")
+
+for i, (h, c) in enumerate(table, 1):
+    print(f"ATTRIBUTES_TABLE[{h}] = ({i}, {len(c)}); // {c}")

@@ -1,15 +1,13 @@
-#[macro_use]
-macro_rules! debug_unreachable {
-    () => {
-        debug_unreachable!("entered unreachable code")
-    };
-    ($e:expr) => {
-        if cfg!(debug_assertions) {
-            unreachable!($e)
-        } else {
-            std::hint::unreachable_unchecked()
-        }
-    };
+#[cfg(debug_assertions)]
+#[inline(always)]
+pub unsafe fn debug_unreachable() -> ! {
+    unreachable!("entered unreachable code");
+}
+
+#[cfg(not(debug_assertions))]
+#[inline(always)]
+pub unsafe fn debug_unreachable() -> ! {
+    std::hint::unreachable_unchecked()
 }
 
 pub trait UncheckedOptionExt<T> {
@@ -33,13 +31,13 @@ impl<T> UncheckedOptionExt<T> for Option<T> {
     unsafe fn unwrap_unchecked(self) -> T {
         match self {
             Some(x) => x,
-            None => debug_unreachable!(),
+            None => debug_unreachable(),
         }
     }
 
     unsafe fn unwrap_none_unchecked(self) {
         if self.is_some() {
-            debug_unreachable!()
+            debug_unreachable()
         }
     }
 }
@@ -48,13 +46,13 @@ impl<T, E> UncheckedResultExt<T, E> for Result<T, E> {
     unsafe fn unwrap_ok_unchecked(self) -> T {
         match self {
             Ok(x) => x,
-            Err(_) => debug_unreachable!(),
+            Err(_) => debug_unreachable(),
         }
     }
 
     unsafe fn unwrap_err_unchecked(self) -> E {
         match self {
-            Ok(_) => debug_unreachable!(),
+            Ok(_) => debug_unreachable(),
             Err(e) => e,
         }
     }

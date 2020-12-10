@@ -1,10 +1,16 @@
+use std::convert::TryFrom;
+
 use anyhow::{bail, ensure};
 
+use crate::unreachable::UncheckedResultExt;
 use crate::{SliceWrapper, SliceWrapperMut};
 
 const SHINY_GOLD: u16 = (12 << 5) | 15;
 const HAS_GOLD_BIT: u64 = 63;
 const BAG_SHIFT: u64 = 15;
+
+static mut COLOR_TABLE: [(u16, u16); 215] = [(0, 0); 215];
+static mut ATTRIBUTES_TABLE: [(u16, u16); 1024] = [(0, 0); 1024];
 
 pub struct Solver(());
 
@@ -12,6 +18,7 @@ impl Solver {
     pub fn new() -> Self {
         let solver = Self(());
         assert_solver_day!(solver);
+        init_parsing_tables();
         solver
     }
 }
@@ -222,102 +229,32 @@ unsafe fn propagate_contains_gold(
 #[inline(always)]
 unsafe fn parse_bag(bytes: SliceWrapper<u8>, i: &mut u32) -> u16 {
     let (attr, len) = parse_attribute(&bytes[*i as usize..]);
-    *i += len + 1;
+    *i += len as u32 + 1;
     let (color, len) = parse_color(&bytes[*i as usize..]);
-    *i += len;
+    *i += len as u32;
 
     (color << 5) | attr
 }
 
 #[inline(always)]
-unsafe fn parse_color(bytes: &[u8]) -> (u16, u32) {
+unsafe fn parse_color(bytes: &[u8]) -> (u16, u16) {
     let bytes = SliceWrapper::new(bytes);
-    match bytes[0] {
-        b'a' => (1, 4), // aqua
-        b'b' => match bytes[3] {
-            b'g' => (2, 5), // beige
-            b'c' => (3, 5), // black
-            b'e' => (4, 4), // blue
-            b'n' => (5, 6), // bronze
-            _ => (6, 5),    // brown
-        },
-        b'c' => match bytes[1] {
-            b'h' => (7, 10), // chartreuse
-            b'o' => (8, 5),  // coral
-            b'r' => (9, 7),  // crimson
-            _ => (10, 4),    // cyan
-        },
-        b'f' => (11, 7), // fuchsia
-        b'g' => match bytes[2] {
-            b'l' => (12, 4), // gold
-            b'a' => (13, 4), // gray
-            _ => (14, 5),    // green
-        },
-        b'i' => (15, 6), // indigo
-        b'l' => match bytes[1] {
-            b'a' => (16, 8), // lavender
-            _ => (17, 4),    // lime
-        },
-        b'm' => match bytes[2] {
-            b'g' => (18, 7), // magenta
-            _ => (19, 6),    // maroon
-        },
-        b'o' => match bytes[1] {
-            b'l' => (20, 5), // olive
-            _ => (21, 6),    // orange
-        },
-        b'p' => match bytes[1] {
-            b'l' => (22, 4), // plum
-            _ => (23, 6),    // purple
-        },
-        b'r' => (24, 3), // red
-        b's' => match bytes[1] {
-            b'a' => (25, 6), // salmon
-            _ => (26, 6),    // silver
-        },
-        b't' => match bytes[1] {
-            b'a' => (27, 3), // tan
-            b'e' => (28, 4), // teal
-            b'o' => (29, 6), // tomato
-            _ => (30, 9),    // turquoise
-        },
-        b'v' => (31, 6), // violet
-        b'w' => (32, 5), // white
-        _ => (33, 6),    // yellow
-    }
+    let color = u32::from_le_bytes(<[u8; 4]>::try_from(&bytes[0..4usize]).unwrap_ok_unchecked());
+    let index = color % 215;
+    let val = SliceWrapper::new(&COLOR_TABLE)[index];
+    debug_assert!(val != (0, 0), "Invalid color");
+    val
 }
 
 #[inline(always)]
-unsafe fn parse_attribute(bytes: &[u8]) -> (u16, u32) {
+unsafe fn parse_attribute(bytes: &[u8]) -> (u16, u16) {
     let bytes = SliceWrapper::new(bytes);
-    match bytes[0] {
-        b'b' => (1, 6), // bright
-        b'c' => (2, 5), // clear
-        b'd' => match bytes[1] {
-            b'a' => (3, 4), // dark
-            b'i' => (4, 3), // dim
-            b'o' => (5, 6), // dotted
-            b'r' => (6, 4), // drab
-            _ => (7, 4),    // dull
-        },
-        b'f' => (8, 5), // faded
-        b'l' => (9, 5), // light
-        b'm' => match bytes[1] {
-            b'i' => (10, 8), // mirrored
-            _ => (11, 5),    // muted
-        },
-        b'p' => match bytes[1] {
-            b'a' => (12, 4), // pale
-            b'l' => (13, 5), // plaid
-            _ => (14, 4),    // posh
-        },
-        b's' => match bytes[1] {
-            b'h' => (15, 5), // shiny
-            _ => (16, 7),    // striped
-        },
-        b'v' => (17, 7), // vibrant
-        _ => (18, 4),    // wavy
-    }
+    let a = (bytes[0] & 0b11111_u8) as u16;
+    let b = (bytes[1] & 0b11111_u8) as u16;
+    let index = (a << 5) | b;
+    let val = SliceWrapper::new(&ATTRIBUTES_TABLE)[index as u32];
+    debug_assert!(val != (0, 0), "Invalid attribute");
+    val
 }
 
 fn validata_bag(bag: &str) -> anyhow::Result<()> {
@@ -344,4 +281,70 @@ fn validata_bag(bag: &str) -> anyhow::Result<()> {
         _ => bail!("Invalid bag: {}", bag),
     }
     Ok(())
+}
+
+fn init_parsing_tables() {
+    use std::sync::atomic::AtomicBool;
+    static TABLES_INIT: AtomicBool = AtomicBool::new(false);
+
+    if TABLES_INIT.swap(true, std::sync::atomic::Ordering::SeqCst) {
+        return;
+    }
+
+    unsafe {
+        // Colors
+        COLOR_TABLE[79] = (1, 4); // aqua
+        COLOR_TABLE[137] = (2, 5); // beige
+        COLOR_TABLE[37] = (3, 5); // black
+        COLOR_TABLE[144] = (4, 4); // blue
+        COLOR_TABLE[208] = (5, 6); // bronze
+        COLOR_TABLE[7] = (6, 5); // brown
+        COLOR_TABLE[184] = (7, 10); // chartreuse
+        COLOR_TABLE[116] = (8, 5); // coral
+        COLOR_TABLE[107] = (9, 7); // crimson
+        COLOR_TABLE[182] = (10, 4); // cyan
+        COLOR_TABLE[77] = (11, 7); // fuchsia
+        COLOR_TABLE[72] = (12, 4); // gold
+        COLOR_TABLE[155] = (13, 4); // gray
+        COLOR_TABLE[159] = (14, 5); // green
+        COLOR_TABLE[90] = (15, 6); // indigo
+        COLOR_TABLE[94] = (16, 8); // lavender
+        COLOR_TABLE[128] = (17, 4); // lime
+        COLOR_TABLE[35] = (18, 7); // magenta
+        COLOR_TABLE[171] = (19, 6); // maroon
+        COLOR_TABLE[102] = (20, 5); // olive
+        COLOR_TABLE[122] = (21, 6); // orange
+        COLOR_TABLE[51] = (22, 4); // plum
+        COLOR_TABLE[40] = (23, 6); // purple
+        COLOR_TABLE[142] = (24, 3); // red
+        COLOR_TABLE[169] = (25, 6); // salmon
+        COLOR_TABLE[81] = (26, 6); // silver
+        COLOR_TABLE[20] = (27, 3); // tan
+        COLOR_TABLE[212] = (28, 4); // teal
+        COLOR_TABLE[113] = (29, 6); // tomato
+        COLOR_TABLE[165] = (30, 9); // turquoise
+        COLOR_TABLE[47] = (31, 6); // violet
+        COLOR_TABLE[134] = (32, 5); // white
+        COLOR_TABLE[3] = (33, 6); // yellow
+
+        // Attributes
+        ATTRIBUTES_TABLE[82] = (1, 6); // bright
+        ATTRIBUTES_TABLE[108] = (2, 5); // clear
+        ATTRIBUTES_TABLE[129] = (3, 4); // dark
+        ATTRIBUTES_TABLE[137] = (4, 3); // dim
+        ATTRIBUTES_TABLE[143] = (5, 6); // dotted
+        ATTRIBUTES_TABLE[146] = (6, 4); // drab
+        ATTRIBUTES_TABLE[149] = (7, 4); // dull
+        ATTRIBUTES_TABLE[193] = (8, 5); // faded
+        ATTRIBUTES_TABLE[393] = (9, 5); // light
+        ATTRIBUTES_TABLE[425] = (10, 8); // mirrored
+        ATTRIBUTES_TABLE[437] = (11, 5); // muted
+        ATTRIBUTES_TABLE[513] = (12, 4); // pale
+        ATTRIBUTES_TABLE[524] = (13, 5); // plaid
+        ATTRIBUTES_TABLE[527] = (14, 4); // posh
+        ATTRIBUTES_TABLE[616] = (15, 5); // shiny
+        ATTRIBUTES_TABLE[628] = (16, 7); // striped
+        ATTRIBUTES_TABLE[713] = (17, 7); // vibrant
+        ATTRIBUTES_TABLE[737] = (18, 4); // wavy
+    }
 }
