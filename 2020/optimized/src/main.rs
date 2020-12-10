@@ -54,7 +54,7 @@ fn add_newline(mut inp: String) -> String {
 
 fn benchmark(
     solver: &dyn Solver,
-    expected: Option<(u32, u32)>,
+    expected: Option<(String, String)>,
     iterations: Option<u64>,
     input_directory: Option<&str>,
 ) -> anyhow::Result<()> {
@@ -84,7 +84,6 @@ fn benchmark(
     let duration = start.elapsed();
 
     if let Some(expected) = expected {
-        let expected = (expected.0.to_string(), expected.1.to_string());
         ensure!(
             out == expected,
             "Wrong result: {:?} vs {:?} (expected)",
@@ -103,7 +102,7 @@ fn benchmark(
 
 fn benchmark_all(
     solvers: Vec<Box<dyn Solver>>,
-    expected: &[(u32, u32)],
+    expected: &[(String, String)],
     iterations: Option<u64>,
     input_directory: Option<&str>,
 ) -> anyhow::Result<()> {
@@ -153,8 +152,7 @@ fn benchmark_all(
         );
 
         if let Some(expected) = expected.get(solver.day() as usize - 1) {
-            let expected = (expected.0.to_string(), expected.1.to_string());
-            if out != expected {
+            if out != *expected {
                 println!(
                     "       => Wrong result: {:?} vs {:?} (expected)",
                     out, expected
@@ -190,14 +188,14 @@ fn benchmark_all(
     Ok(())
 }
 
-fn parse_expected(path: impl AsRef<Path>) -> Option<Vec<(u32, u32)>> {
+fn parse_expected(path: impl AsRef<Path>) -> Option<Vec<(String, String)>> {
     let mut result = Vec::new();
     let path = path.as_ref();
 
     let content = match std::fs::read_to_string(path) {
         Ok(x) => x,
         Err(error) => {
-            eprintln!("Failed to read '{:?}': {}", path, error);
+            eprintln!("Failed to read {:?}: {}", path, error);
             return None;
         }
     };
@@ -206,25 +204,11 @@ fn parse_expected(path: impl AsRef<Path>) -> Option<Vec<(u32, u32)>> {
         let mut iter = line.split_whitespace();
         match (iter.next(), iter.next()) {
             (Some(a), Some(b)) => {
-                let a = match a.parse::<u32>() {
-                    Ok(x) => x,
-                    Err(error) => {
-                        eprintln!("Failed to parse '{:?}':{}: {}\n", path, i, error);
-                        return None;
-                    }
-                };
-                let b = match b.parse::<u32>() {
-                    Ok(x) => x,
-                    Err(error) => {
-                        eprintln!("Failed to parse '{:?}':{}: {}\n", path, i, error);
-                        return None;
-                    }
-                };
-                result.push((a, b));
+                result.push((a.to_string(), b.to_string()));
             }
             _ => {
                 eprintln!(
-                    "Failed to parse '{:?}':{}: Expected two space separated values\n",
+                    "Failed to parse {:?}:{}: Expected two space separated values\n",
                     path, i
                 );
                 return None;
@@ -234,7 +218,7 @@ fn parse_expected(path: impl AsRef<Path>) -> Option<Vec<(u32, u32)>> {
     Some(result)
 }
 
-fn get_expected(dir: Option<&str>, path: &str) -> Option<Vec<(u32, u32)>> {
+fn get_expected(dir: Option<&str>, path: &str) -> Option<Vec<(String, String)>> {
     if let Some(dir) = dir {
         let path = Path::new(dir).join(path);
         if path.is_file() {
@@ -292,7 +276,7 @@ fn run() -> anyhow::Result<()> {
     let input_dir = args.value_of("input-directory");
     let expected_file = args.value_of("expected-file").unwrap_or("expected.txt");
 
-    let expected = if args.is_present("no-check-results") {
+    let expected = if args.is_present("no-check") {
         Vec::new()
     } else {
         get_expected(input_dir, expected_file).unwrap_or_default()
@@ -320,7 +304,7 @@ fn run() -> anyhow::Result<()> {
         );
         benchmark(
             &*solvers[day - 1],
-            expected.get(day - 1).copied(),
+            expected.get(day - 1).cloned(),
             iterations,
             input_dir,
         )
@@ -328,7 +312,7 @@ fn run() -> anyhow::Result<()> {
         let day = solvers.len() - 1;
         benchmark(
             &*solvers[day],
-            expected.get(day).copied(),
+            expected.get(day).cloned(),
             iterations,
             input_dir,
         )
