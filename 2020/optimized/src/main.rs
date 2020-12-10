@@ -268,8 +268,8 @@ fn run() -> anyhow::Result<()> {
                 .help("Benchmark a single day"),
         )
         .arg(
-            Arg::with_name("no-check-results")
-                .long("no-check-results")
+            Arg::with_name("no-check")
+                .long("no-check")
                 .help("Don't check if results are correct"),
         )
         .arg(

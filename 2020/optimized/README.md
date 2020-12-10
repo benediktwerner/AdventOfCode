@@ -14,7 +14,7 @@ All options:
 - `-a`/`--all`: Benchmark all days.
 - `-d <DAY>`/`--day <DAY>`: Benchmark a single day.
 - `-i <NUM>`/`--iterations <NUM>`: Number of iterations between timings.
-- `--no-check-results`: Don't check if results are correct.
+- `--no-check`: Don't check if results are correct.
 - `--input-directory <DIR>`: Directory for inputs. See above.
 - `--expected-file <FILE>`: File for expected inputs. Defaults to `expected.txt`.
 
