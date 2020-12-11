@@ -2,8 +2,6 @@
 
 from os import path
 
-from networkx.classes.function import neighbors
-
 def solve(seats, neighbors, occ):
     neighbor_count = {}
     change = True
@@ -65,4 +63,4 @@ with open(path.join(path.dirname(__file__), "input.txt")) as f:
             neighbors2[x, y] = curr_neighbors2
     
     print("Part 1:", solve(seats.copy(), neighbors1, 4))
-    print("Part 1:", solve(seats, neighbors2, 5))
+    print("Part 2:", solve(seats, neighbors2, 5))
