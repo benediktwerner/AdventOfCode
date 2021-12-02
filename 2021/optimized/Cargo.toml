@@ -1,0 +1,16 @@
+[package]
+name = "aoc-optimized"
+version = "0.1.0"
+authors = ["Benedikt Werner <1benediktwerner@gmail.com>"]
+edition = "2021"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[dependencies]
+libc = { version = "0.2", default-features = false }
