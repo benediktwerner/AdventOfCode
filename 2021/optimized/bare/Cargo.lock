@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "aoc-optimized"
+name = "aoc-2021-optimized-bare"
 version = "0.1.0"
 dependencies = [
  "libc",
