@@ -1,10 +1,10 @@
 #![allow(clippy::len_without_is_empty)]
 
-use std::{mem::MaybeUninit, slice::SliceIndex};
+use core::{mem::MaybeUninit, slice::SliceIndex};
 
 macro_rules! impl_index {
     ($it:ty, $t:ty, $lifetime:tt, $T:tt) => {
-        impl<$lifetime, $T> std::ops::Index<$it> for $t {
+        impl<$lifetime, $T> core::ops::Index<$it> for $t {
             type Output = <$it as SliceIndex<[$T]>>::Output;
 
             #[cfg(debug_assertions)]
@@ -24,7 +24,7 @@ macro_rules! impl_index {
 
 macro_rules! impl_index_mut {
     ($it:ty, $t:ty, $lifetime:tt, $T:tt) => {
-        impl<$lifetime, $T> std::ops::IndexMut<$it> for $t {
+        impl<$lifetime, $T> core::ops::IndexMut<$it> for $t {
             #[cfg(debug_assertions)]
             #[inline(always)]
             fn index_mut(&mut self, index: $it) -> &mut Self::Output {
@@ -74,10 +74,10 @@ impl<'a, T> SliceWrapper<'a, MaybeUninit<T>> {
 }
 
 impl_index!(usize, SliceWrapper<'a, T>, 'a, T);
-impl_index!(std::ops::Range<usize>, SliceWrapper<'a, T>, 'a, T);
-impl_index!(std::ops::RangeFrom<usize>, SliceWrapper<'a, T>, 'a, T);
+impl_index!(core::ops::Range<usize>, SliceWrapper<'a, T>, 'a, T);
+impl_index!(core::ops::RangeFrom<usize>, SliceWrapper<'a, T>, 'a, T);
 
-impl<'a, T> std::ops::Index<u32> for SliceWrapper<'a, T> {
+impl<'a, T> core::ops::Index<u32> for SliceWrapper<'a, T> {
     type Output = T;
 
     #[inline(always)]
@@ -86,7 +86,7 @@ impl<'a, T> std::ops::Index<u32> for SliceWrapper<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::Index<i32> for SliceWrapper<'a, T> {
+impl<'a, T> core::ops::Index<i32> for SliceWrapper<'a, T> {
     type Output = T;
 
     #[inline(always)]
@@ -95,11 +95,11 @@ impl<'a, T> std::ops::Index<i32> for SliceWrapper<'a, T> {
     }
 }
 
-impl<'a, T> std::ops::Index<std::ops::Range<u32>> for SliceWrapper<'a, T> {
+impl<'a, T> core::ops::Index<core::ops::Range<u32>> for SliceWrapper<'a, T> {
     type Output = [T];
 
     #[inline(always)]
-    fn index(&self, index: std::ops::Range<u32>) -> &Self::Output {
+    fn index(&self, index: core::ops::Range<u32>) -> &Self::Output {
         self.index(index.start as usize..index.end as usize)
     }
 }
@@ -138,9 +138,9 @@ impl<'a, T> SliceWrapperMut<'a, MaybeUninit<T>> {
 
 impl_index!(usize, SliceWrapperMut<'a, T>, 'a, T);
 impl_index_mut!(usize, SliceWrapperMut<'a, T>, 'a, T);
-impl_index!(std::ops::Range<usize>, SliceWrapperMut<'a, T>, 'a, T);
-impl_index_mut!(std::ops::Range<usize>, SliceWrapperMut<'a, T>, 'a, T);
-impl_index!(std::ops::RangeFrom<usize>, SliceWrapperMut<'a, T>, 'a, T);
-impl_index_mut!(std::ops::RangeFrom<usize>, SliceWrapperMut<'a, T>, 'a, T);
-impl_index!(std::ops::RangeTo<usize>, SliceWrapperMut<'a, T>, 'a, T);
-impl_index_mut!(std::ops::RangeTo<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index!(core::ops::Range<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index_mut!(core::ops::Range<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index!(core::ops::RangeFrom<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index_mut!(core::ops::RangeFrom<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index!(core::ops::RangeTo<usize>, SliceWrapperMut<'a, T>, 'a, T);
+impl_index_mut!(core::ops::RangeTo<usize>, SliceWrapperMut<'a, T>, 'a, T);

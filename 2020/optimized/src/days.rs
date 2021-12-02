@@ -1,4 +1,3 @@
-#[macro_use]
 macro_rules! assert_solver_day {
     ($solver:expr) => {
         assert_eq!(format!("src/days/day{:02}.rs", crate::Solver::day(&$solver)), file!(), "Solver in '{}' has incorrect Solver::day()", file!());

@@ -1,8 +1,11 @@
 [package]
-name = "aoc-2020-optimized"
+name = "aoc-2021-optimized-bare"
 version = "0.1.0"
 authors = ["Benedikt Werner <1benediktwerner@gmail.com>"]
-edition = "2018"
+edition = "2021"
+
+[profile.dev]
+panic = "abort"
 
 [profile.release]
 lto = true
@@ -10,11 +13,4 @@ codegen-units = 1
 panic = "abort"
 
 [dependencies]
-anyhow = "1.0"
-clap = "2"
-rustc-hash = "1.1"
-# regex = "*"
-# libc = "0.2"
-
-# [build-dependencies]
-# cc = "1.0"
+libc = { version = "0.2", default-features = false }
