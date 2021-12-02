@@ -30,8 +30,8 @@ pub fn get_solvers() -> Vec<Box<dyn crate::Solver>> {
         Box::new(day08::Solver::new()),
         Box::new(day09::Solver::new()),
         Box::new(day10::Solver::new()),
-        Box::new(day11::Solver::new()),
-        Box::new(day12::Solver::new()),
+        // Box::new(day11::Solver::new()),
+        // Box::new(day12::Solver::new()),
         Box::new(day13::Solver::new()),
     ]
 }
