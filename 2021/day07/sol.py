@@ -16,3 +16,6 @@ with open(path.join(path.dirname(__file__), "input.txt")) as f:
         part2 = min(part2, sum(euler_sum(abs(target - c)) for c in crabs))
     print("Part 1:", part1)
     print("Part 2:", part2)
+
+    # part1 target = median
+    # part2 target = floor(mean) ?
