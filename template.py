@@ -11,7 +11,7 @@ import pyperclip
 
 
 def ints(string):
-    return map(int, re.findall(r"-?[0-9]+", string))
+    return list(map(int, re.findall(r"-?[0-9]+", string)))
 
 
 def solve(inp):
