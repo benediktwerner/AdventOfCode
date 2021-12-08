@@ -77,7 +77,7 @@ impl crate::Solver for Solver {
 }
 
 #[inline(always)]
-fn read_num<'a>(s: SliceWrapper<'a, u8>, i: &mut usize) -> u32 {
+fn read_num(s: SliceWrapper<u8>, i: &mut usize) -> u32 {
     let mut num = (s[*i] - b'0') as u32;
     *i += 1;
     loop {
