@@ -37,3 +37,22 @@ since the respective other two values are the same.
 ### Day 2
 
 Nothing interesting going on here.
+
+### Day 4
+
+> These are doable very quickly (< 3 seconds). For each board, figure out what time it wins at. By building a map of called number -> time it's called, you can determine this very quickly. For each board, take maximum across each row/column, take minimum of those maxima.
+
+### Day 5
+
+- https://www.reddit.com/r/adventofcode/comments/r9hpfs/2021_day_5_bigger_vents/hnf8obo/?context=3
+- https://www.reddit.com/r/adventofcode/comments/r9zwj0/2021_day_5_unofficial_part_4_100000_long_vents/
+
+### Day 6
+
+https://www.reddit.com/r/adventofcode/comments/ratue0/2021_day_6_fricas_solution_via_finding_a/
+
+### Day 7
+
+Part 1's target is the mean.
+
+Part 2's target is `ceil((sum(crabs) - sum(c < mean for c in crabs)) / len(crabs))`.
