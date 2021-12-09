@@ -46,7 +46,6 @@ impl crate::Solver for Solver {
         let mut inp = SliceWrapperMut::new(&mut inp);
 
         let width = inp.0.iter().position(|c| *c == b'\n').unwrap_unchecked();
-
         let width1 = width + 1;
         let height = input.len() / width1;
         let mut part1 = 0_u32;
@@ -58,33 +57,9 @@ impl crate::Solver for Solver {
                 if c == b'9' {
                     continue;
                 }
-                let mut todo = vec![(x, y)];
                 let mut min = c;
-                let mut size = 0;
                 inp[y * width1 + x] = b'9';
-                while let Some((x, y)) = todo.pop() {
-                    size += 1;
-                    if x > 0 && inp[y * width1 + x - 1] != b'9' {
-                        todo.push((x - 1, y));
-                        min = std::cmp::min(min, inp[y * width1 + x - 1]);
-                        inp[y * width1 + x - 1] = b'9';
-                    }
-                    if x < width - 1 && inp[y * width1 + x + 1] != b'9' {
-                        todo.push((x + 1, y));
-                        min = std::cmp::min(min, inp[y * width1 + x + 1]);
-                        inp[y * width1 + x + 1] = b'9';
-                    }
-                    if y > 0 && inp[(y - 1) * width1 + x] != b'9' {
-                        todo.push((x, y - 1));
-                        min = std::cmp::min(min, inp[(y - 1) * width1 + x]);
-                        inp[(y - 1) * width1 + x] = b'9';
-                    }
-                    if y < height - 1 && inp[(y + 1) * width1 + x] != b'9' {
-                        todo.push((x, y + 1));
-                        min = std::cmp::min(min, inp[(y + 1) * width1 + x]);
-                        inp[(y + 1) * width1 + x] = b'9';
-                    }
-                }
+                let size = dfs(inp.0, width, height, (x, y), &mut min);
                 if size > part2.2 {
                     part2.0 = part2.1;
                     part2.1 = part2.2;
@@ -101,4 +76,31 @@ impl crate::Solver for Solver {
 
         (part1.to_string(), (part2.0 * part2.1 * part2.2).to_string())
     }
+}
+
+unsafe fn dfs(inp: &mut [u8], width: usize, height: usize, (x, y): (usize, usize), min: &mut u8) -> u32 {
+    let mut inp = SliceWrapperMut::new(inp);
+    let mut size = 1;
+    let width1 = width + 1;
+    if x > 0 && inp[y * width1 + x - 1] != b'9' {
+        *min = std::cmp::min(*min, inp[y * width1 + x - 1]);
+        inp[y * width1 + x - 1] = b'9';
+        size += dfs(inp.0, width, height, (x - 1, y), min);
+    }
+    if x < width - 1 && inp[y * width1 + x + 1] != b'9' {
+        *min = std::cmp::min(*min, inp[y * width1 + x + 1]);
+        inp[y * width1 + x + 1] = b'9';
+        size += dfs(inp.0, width, height, (x + 1, y), min);
+    }
+    if y > 0 && inp[(y - 1) * width1 + x] != b'9' {
+        *min = std::cmp::min(*min, inp[(y - 1) * width1 + x]);
+        inp[(y - 1) * width1 + x] = b'9';
+        size += dfs(inp.0, width, height, (x, y - 1), min);
+    }
+    if y < height - 1 && inp[(y + 1) * width1 + x] != b'9' {
+        *min = std::cmp::min(*min, inp[(y + 1) * width1 + x]);
+        inp[(y + 1) * width1 + x] = b'9';
+        size += dfs(inp.0, width, height, (x, y + 1), min);
+    }
+    size
 }
