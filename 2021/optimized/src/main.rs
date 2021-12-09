@@ -1,3 +1,5 @@
+#![allow(unstable_name_collisions)]
+
 use std::{path::Path, time::Instant};
 
 use anyhow::{bail, ensure, Context};
