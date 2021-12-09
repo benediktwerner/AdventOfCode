@@ -1,6 +1,6 @@
 use anyhow::{bail, ensure};
 
-use crate::{unreachable::UncheckedOptionExt, SliceWrapper};
+use crate::{unreachable::UncheckedOptionExt, SliceWrapperMut};
 
 pub struct Solver(());
 
@@ -42,19 +42,15 @@ impl crate::Solver for Solver {
     }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {
-        let inp = SliceWrapper::new(input.as_bytes());
+        let mut inp = input.as_bytes().to_vec();
+        let mut inp = SliceWrapperMut::new(&mut inp);
 
-        let width = input
-            .as_bytes()
-            .iter()
-            .position(|c| *c == b'\n')
-            .unwrap_unchecked();
+        let width = inp.0.iter().position(|c| *c == b'\n').unwrap_unchecked();
 
         let width1 = width + 1;
         let height = input.len() / width1;
         let mut part1 = 0_u32;
         let mut part2 = (0_u32, 0_u32, 0_u32);
-        let mut seen = vec![false; width * height];
 
         for y in 0..height {
             for x in 0..width {
@@ -62,39 +58,31 @@ impl crate::Solver for Solver {
                 if c == b'9' {
                     continue;
                 }
-                if (x == 0 || inp[y * width1 + x - 1] > c)
-                && (x == width - 1 || inp[y * width1 + x + 1] > c)
-                    && (y == 0 || inp[(y - 1) * width1 + x] > c)
-                    && (y == height - 1 || inp[(y + 1) * width1 + x] > c)
-                {
-                    part1 += (c - b'0') as u32 + 1;
-                }
-                if seen[y * width + x] {
-                    continue;
-                }
                 let mut todo = vec![(x, y)];
-                seen[y * width + x] = true;
+                let mut min = c;
                 let mut size = 0;
+                inp[y * width1 + x] = b'9';
                 while let Some((x, y)) = todo.pop() {
                     size += 1;
-                    if x > 0 && !seen[y * width + x - 1] && inp[y * width1 + x - 1] != b'9' {
+                    if x > 0 && inp[y * width1 + x - 1] != b'9' {
                         todo.push((x - 1, y));
-                        seen[y * width + x - 1] = true;
+                        min = std::cmp::min(min, inp[y * width1 + x - 1]);
+                        inp[y * width1 + x - 1] = b'9';
                     }
-                    if x < width - 1 && !seen[y * width + x + 1] && inp[y * width1 + x + 1] != b'9' {
+                    if x < width - 1 && inp[y * width1 + x + 1] != b'9' {
                         todo.push((x + 1, y));
-                        seen[y * width + x + 1] = true;
+                        min = std::cmp::min(min, inp[y * width1 + x + 1]);
+                        inp[y * width1 + x + 1] = b'9';
                     }
-                    if y > 0 && !seen[(y - 1) * width + x] && inp[(y - 1) * width1 + x] != b'9' {
+                    if y > 0 && inp[(y - 1) * width1 + x] != b'9' {
                         todo.push((x, y - 1));
-                        seen[(y - 1) * width + x] = true;
+                        min = std::cmp::min(min, inp[(y - 1) * width1 + x]);
+                        inp[(y - 1) * width1 + x] = b'9';
                     }
-                    if y < height - 1
-                        && !seen[(y + 1) * width + x]
-                        && inp[(y + 1) * width1 + x] != b'9'
-                    {
+                    if y < height - 1 && inp[(y + 1) * width1 + x] != b'9' {
                         todo.push((x, y + 1));
-                        seen[(y + 1) * width + x] = true;
+                        min = std::cmp::min(min, inp[(y + 1) * width1 + x]);
+                        inp[(y + 1) * width1 + x] = b'9';
                     }
                 }
                 if size > part2.2 {
@@ -107,6 +95,7 @@ impl crate::Solver for Solver {
                 } else if size > part2.0 {
                     part2.0 = size;
                 }
+                part1 += (min - b'0') as u32 + 1;
             }
         }
 
