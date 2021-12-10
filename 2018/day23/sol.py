@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import re
-from collections import defaultdict
 from z3 import Int, If, Optimize
 
 
@@ -21,7 +20,7 @@ def main():
             bots.append(tuple(map(int, re.findall(r"-?\d+", line))))
 
     x, y, z, r = max(bots, key=lambda b: b[3])
-    in_range = sum((abs(x-b[0])+abs(y-b[1])+abs(z-b[2]) <= r) for b in bots)
+    in_range = sum((abs(x - b[0]) + abs(y - b[1]) + abs(z - b[2]) <= r) for b in bots)
     print("Part 1:", in_range)
 
     x, y, z = Int("x"), Int("y"), Int("z")
