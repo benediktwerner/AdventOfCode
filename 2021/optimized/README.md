@@ -49,7 +49,8 @@ Nothing interesting going on here.
 
 ### Day 6
 
-https://www.reddit.com/r/adventofcode/comments/ratue0/2021_day_6_fricas_solution_via_finding_a/
+- https://www.reddit.com/r/adventofcode/comments/ratue0/2021_day_6_fricas_solution_via_finding_a/
+- https://www.reddit.com/r/adventofcode/comments/rd7feu/day_6_closed_solution_with_an_exponential_function/
 
 ### Day 7
 
