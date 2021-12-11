@@ -55,11 +55,11 @@ impl<'a, T> SliceWrapper<'a, T> {
     /// # Safety
     /// Types created from this function must never leave an unsafe context.
     /// Indexing into this type is always unsafe and requires that the index is valid.
-    pub unsafe fn new(slice: &'a [T]) -> Self {
+    pub const unsafe fn new(slice: &'a [T]) -> Self {
         Self(slice)
     }
 
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.0.len()
     }
 }
@@ -116,7 +116,7 @@ impl<'a, T> SliceWrapperMut<'a, T> {
         Self(slice)
     }
 
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.0.len()
     }
 }
