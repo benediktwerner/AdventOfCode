@@ -1,3 +1,5 @@
+#![allow(unstable_name_collisions)]
+
 use std::{path::Path, time::Instant};
 
 use anyhow::{bail, ensure, Context};
@@ -11,6 +13,8 @@ mod utils;
 use clap::{App, Arg};
 use days::get_solvers;
 pub use slice_wrapper::*;
+
+const DEFAULT_ITERATIONS: u64 = if cfg!(debug_assertions) { 1 } else { 1000 };
 
 pub trait Solver {
     fn day(&self) -> u8;
@@ -58,12 +62,7 @@ fn benchmark(
     iterations: Option<u64>,
     input_directory: Option<&str>,
 ) -> anyhow::Result<()> {
-    #[cfg(debug_assertions)]
-    const ITERATIONS: u64 = 1;
-    #[cfg(not(debug_assertions))]
-    const ITERATIONS: u64 = 1000;
-
-    let iterations = iterations.unwrap_or(ITERATIONS);
+    let iterations = iterations.unwrap_or(DEFAULT_ITERATIONS);
 
     println!("Benchmarking day {}", solver.day());
     println!("{} iteration(s)", iterations);
@@ -106,12 +105,7 @@ fn benchmark_all(
     iterations: Option<u64>,
     input_directory: Option<&str>,
 ) -> anyhow::Result<()> {
-    #[cfg(debug_assertions)]
-    const ITERATIONS: u64 = 1;
-    #[cfg(not(debug_assertions))]
-    const ITERATIONS: u64 = 1000;
-
-    let iterations = iterations.unwrap_or(ITERATIONS);
+    let iterations = iterations.unwrap_or(DEFAULT_ITERATIONS);
 
     println!("\nBenchmarking all days");
     println!("{} iterations each", iterations);

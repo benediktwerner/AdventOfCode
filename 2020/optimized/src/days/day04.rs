@@ -323,11 +323,11 @@ fn goto_space(bytes: crate::SliceWrapper<u8>, i: &mut u32) {
 }
 
 #[inline(always)]
-fn is_space(c: u8) -> bool {
+const fn is_space(c: u8) -> bool {
     c == b' ' || c == b'\n'
 }
 
 #[inline(always)]
-fn is_hex_char(c: u8) -> bool {
+const fn is_hex_char(c: u8) -> bool {
     (b'0' <= c && c <= b'9') || (b'a' <= c && c <= b'f')
 }
