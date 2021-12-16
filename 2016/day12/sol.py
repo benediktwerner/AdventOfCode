@@ -18,21 +18,16 @@ def run(instrs, **inits):
         instr, *args = instrs[ip]
         if instr == "cpy":
             x, y = args
-            if y == "1":
-                print("2")
             if x in REG_NAMES:
                 regs[y] = regs[x]
             else:
                 regs[y] = int(x)
         elif instr == "inc":
-            if args[0] == "1":
-                print("2")
             regs[args[0]] += 1
         elif instr == "dec":
-            if args[0] == "1":
-                print("3")
             regs[args[0]] -= 1
         else:
+            assert instr == "jnz"
             x, target = args
             val = regs[x] if x in REG_NAMES else int(x)
             if val != 0:
@@ -43,14 +38,7 @@ def run(instrs, **inits):
     return regs["a"]
 
 
-def main():
-    with open(path.join(path.dirname(__file__), "input.txt")) as f:
-        instrs = [line.strip.split() for line in f]
-
-        print("Part 1:", run(instrs))
-
-        print("Part 2:", run(instrs, c=1))
-
-
-if __name__ == "__main__":
-    main()
+with open(path.join(path.dirname(__file__), "input.txt")) as f:
+    instrs = [line.strip().split() for line in f]
+    print("Part 1:", run(instrs))
+    print("Part 2:", run(instrs, c=1))
