@@ -1,0 +1,31 @@
+cpy a b         b = a
+dec b           b--                 b = a - 1
+cpy a d         d = a               d = a
+cpy 0 a         a = 0               a = d*b, c = 0, d = 0
+                do
+cpy b c             c = b
+                    do
+inc a                   a++
+dec c                   c--
+jnz c -2            while c
+dec d               d--
+jnz d -5        while d
+dec b           b--                 b--
+cpy b c         c = b               c = 2*b
+cpy c d         d = c
+                do
+dec d               d--
+inc c               c++
+jnz d -2        while d
+tgl c           tgl c               tgl c
+cpy -16 c       c = -16             c = -16
+jnz 1 c         jmp c
+cpy 89 c        c = 89
+                do
+jnz 77 d        jmp d
+                    do
+inc a                   a++
+inc d                   d++
+jnz d -2            while d
+inc c               c++
+jnz c -5        while c
