@@ -1,0 +1,40 @@
+cpy a d     d = a + 9 * 282
+cpy 9 c
+cpy 282 b
+inc d
+dec b
+jnz b -2
+dec c
+jnz c -5
+            loop
+cpy d a         a = d
+jnz 0 0         do
+cpy a b             b = a
+cpy 0 a             a = 0
+                    loop
+cpy 2 c                 c = 2
+                        do
+jnz b 2                     if b == 0
+jnz 1 6                         break 2
+dec b                       b--
+dec c                       c--
+jnz c -4                while c
+inc a                   a++
+jnz 1 -7
+cpy 2 b             b = 2
+jnz c 2             while c
+jnz 1 4
+dec b                   b--
+dec c                   c--
+jnz 1 -4
+jnz 0 0
+out b               out b
+jnz a -19       while a
+jnz 1 -21
+
+loop
+    a = init + 9 * 282
+    do
+        out 2 - a % 2
+        a //= 2
+    while a
