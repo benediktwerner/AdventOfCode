@@ -6,6 +6,7 @@ from datetime import datetime
 from sys import argv
 
 
+BASE_DIR = os.path.dirname(__file__)
 URL = "https://adventofcode.com/{year}/day/{day}/input"
 
 
@@ -44,11 +45,11 @@ else:
     print_usage()
 
 
-dir_name = "{}/day{:02}".format(year, day)
+dir_name = os.path.join(BASE_DIR, str(year), f"day{day:02}")
 cookies = {}
 
 try:
-    with open("cookie") as f:
+    with open(os.path.join(BASE_DIR, "cookie")) as f:
         cookies["session"] = f.read().strip()
 except FileNotFoundError:
     print("No cookie file found.")

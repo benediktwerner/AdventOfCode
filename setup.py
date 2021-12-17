@@ -6,8 +6,9 @@ from datetime import datetime
 from sys import argv
 
 
+BASE_DIR = os.path.dirname(__file__)
 TEMPLATE_FILE = "template.py"
-TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), TEMPLATE_FILE)
+TEMPLATE_PATH = os.path.join(BASE_DIR, TEMPLATE_FILE)
 
 
 def print_usage():
@@ -45,7 +46,7 @@ else:
     print_usage()
 
 
-dir_name = "{}/day{:02}".format(year, day)
+dir_name = os.path.join(BASE_DIR, str(year), f"day{day:02}")
 os.makedirs(dir_name, exist_ok=True)
 
 target_path = os.path.join(dir_name, "sol.py")
