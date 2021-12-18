@@ -28,12 +28,12 @@ def explode(x, n=4):
     if n == 0:
         return True, x[0], 0, x[1]
     a, b = x
-    exp, u, a, v = explode(a, n - 1)
+    exp, left, a, right = explode(a, n - 1)
     if exp:
-        return True, u, [a, add_left(b, v)], None
-    exp, u, b, v = explode(b, n - 1)
+        return True, left, [a, add_left(b, right)], None
+    exp, left, b, right = explode(b, n - 1)
     if exp:
-        return True, None, [add_right(a, u), b], v
+        return True, None, [add_right(a, left), b], right
     return False, None, x, None
 
 
