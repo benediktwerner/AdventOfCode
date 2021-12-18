@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import itertools
+import json
 import math
 from functools import reduce
 from os import path
@@ -69,7 +70,7 @@ def magnitude(x):
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
-    lines = list(map(eval, f.read().splitlines()))
+    lines = list(map(json.loads, f.read().splitlines()))
     print("Part 1:", magnitude(reduce(add, lines)))
     print(
         "Part 2:",
