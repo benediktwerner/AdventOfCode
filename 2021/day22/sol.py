@@ -40,16 +40,10 @@ class Line:
             ]
 
     def intersect(self, other: Line) -> Optional[Line]:
-        if other.end < self.start or self.end < other.start:
-            return None
-        elif other.start <= self.start and self.end <= other.end:
-            return self
-        elif other.start <= self.start and other.end < self.end:
-            return Line(self.start, other.end)
-        elif self.start < other.start and self.end <= other.end:
-            return Line(other.start, self.end)
-        else:
-            return other
+        start = max(self.start, other.start)
+        end = min(self.end, other.end)
+        if start <= end:
+            return Line(start, end)
 
     @property
     def length(self) -> int:
