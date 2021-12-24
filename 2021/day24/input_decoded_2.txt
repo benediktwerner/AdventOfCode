@@ -1,0 +1,69 @@
+w = inp
+check *= 26
+check += w + 1
+
+w = inp
+check *= 26
+check += w + 11
+
+w = inp
+check *= 26
+check += w + 1
+
+w = inp
+check *= 26
+check += w + 11
+
+w = inp
+x = (check % 26) - 8
+check /= 26
+if x != w: check *= 26
+check += (w + 2) * (x != w)
+
+w = inp
+x = (check % 26) - 5
+check /= 26
+if x != w: check *= 26
+check += (w + 9) * (x != w)
+
+w = inp
+check *= 26
+check += w + 7
+
+w = inp
+x = (check % 26) - 13
+check /= 26
+if x != w: check *= 26
+check += (w + 11) * (x != w)
+
+w = inp
+check *= 26
+check += w + 6
+
+w = inp
+x = (check % 26) - 1
+check /= 26
+if x != w: check *= 26
+check += (w + 15) * (x != w)
+
+w = inp
+check *= 26
+check += w + 7
+
+w = inp
+x = (check % 26) - 5
+check /= 26
+if x != w: check *= 26
+check += (w + 1) * (x != w)
+
+w = inp
+x = (check % 26) - 4
+check /= 26
+if x != w: check *= 26
+check += (w + 8) * (x != w)
+
+w = inp
+x = (check % 26) - 8
+check /= 26
+if x != w: check *= 26
+check += (w + 6) * (x != w)
