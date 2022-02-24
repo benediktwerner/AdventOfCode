@@ -67,7 +67,7 @@ Also we can convert characters to bits in a single `notand` and bitshift since b
 We can represent the answers given by a single person as a `u32` (32-bit integer).
 For each letter `c` we set the bit `1 << c`. The shift-operand gets automatically masked which avoids overflow.
 
-We can then compute the answers given by anybody with a bitwise `or` and those givne by everybody with a bitwise `and`
+We can then compute the answers given by anybody with a bitwise `or` and those given by everybody with a bitwise `and`
 and then count the bits in the result which can be done in one instruction on `x86`.
 
 ### Day 7
