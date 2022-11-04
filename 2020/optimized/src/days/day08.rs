@@ -86,16 +86,16 @@ impl crate::Solver for Solver {
             let neg = bytes[i + 4] == b'-';
             let mut arg = (bytes[i + 5] - b'0') as Arg;
 
-            if bytes[i + 6] != b'\n' {
+            if bytes[i + 6] == b'\n' {
+                i += 7;
+            } else {
                 arg = arg * 10 + (bytes[i + 6] - b'0') as Arg;
-                if bytes[i + 7] != b'\n' {
+                if bytes[i + 7] == b'\n' {
+                    i += 8;
+                } else {
                     arg = arg * 10 + (bytes[i + 7] - b'0') as Arg;
                     i += 9;
-                } else {
-                    i += 8;
                 }
-            } else {
-                i += 7;
             }
             // i += 6;
             // while bytes[i] != b'\n' {

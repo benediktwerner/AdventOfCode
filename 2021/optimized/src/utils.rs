@@ -17,6 +17,7 @@ fn thousand_separated(n: u128) -> String {
     result
 }
 
+#[allow(clippy::cast_precision_loss)]
 pub fn format_duration(nanos: u128) -> (String, String) {
     let nanos_sep = format!("{}ns", thousand_separated(nanos));
 

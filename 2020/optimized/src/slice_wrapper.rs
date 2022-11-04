@@ -1,6 +1,10 @@
 #![allow(clippy::len_without_is_empty)]
 
-use std::{mem::MaybeUninit, slice::SliceIndex};
+use std::{
+    mem::MaybeUninit,
+    ptr::{addr_of, addr_of_mut},
+    slice::SliceIndex,
+};
 
 macro_rules! impl_index {
     ($it:ty, $t:ty, $lifetime:tt, $T:tt) => {
@@ -59,6 +63,7 @@ impl<'a, T> SliceWrapper<'a, T> {
         Self(slice)
     }
 
+    #[must_use]
     pub const fn len(&self) -> usize {
         self.0.len()
     }
@@ -67,8 +72,9 @@ impl<'a, T> SliceWrapper<'a, T> {
 impl<'a, T> SliceWrapper<'a, MaybeUninit<T>> {
     /// # Safety
     /// This function is only save to call when all 0..len elements in the slice have been initialized
+    #[must_use]
     pub unsafe fn assume_init(self, len: usize) -> SliceWrapper<'a, T> {
-        let ptr = &self.0[..len] as *const [MaybeUninit<T>] as *const [T];
+        let ptr = addr_of!(self.0[..len]) as *const [T];
         SliceWrapper(&*ptr)
     }
 }
@@ -116,6 +122,7 @@ impl<'a, T> SliceWrapperMut<'a, T> {
         Self(slice)
     }
 
+    #[must_use]
     pub const fn len(&self) -> usize {
         self.0.len()
     }
@@ -124,14 +131,16 @@ impl<'a, T> SliceWrapperMut<'a, T> {
 impl<'a, T> SliceWrapperMut<'a, MaybeUninit<T>> {
     /// # Safety
     /// This function is only save to call when all 0..len elements in the slice have been initialized
+    #[must_use]
     pub unsafe fn assume_init(self, len: usize) -> SliceWrapper<'a, T> {
-        let ptr = &self.0[..len] as *const [MaybeUninit<T>] as *const [T];
+        let ptr = addr_of!(self.0[..len]) as *const [T];
         SliceWrapper::new(&*ptr)
     }
     /// # Safety
     /// This function is only save to call when all 0..len elements in the slice have been initialized
+    #[must_use]
     pub unsafe fn assume_init_mut(self, len: usize) -> SliceWrapperMut<'a, T> {
-        let ptr = &mut self.0[..len] as *mut [MaybeUninit<T>] as *mut [T];
+        let ptr = addr_of_mut!(self.0[..len]) as *mut [T];
         SliceWrapperMut::new(&mut *ptr)
     }
 }

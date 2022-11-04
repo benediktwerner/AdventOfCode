@@ -2,7 +2,6 @@ use std::convert::TryFrom;
 
 use anyhow::{bail, ensure};
 
-use crate::unreachable::UncheckedResultExt;
 use crate::{SliceWrapper, SliceWrapperMut};
 
 const SHINY_GOLD: u16 = (12 << 5) | 15;
@@ -239,7 +238,7 @@ unsafe fn parse_bag(bytes: SliceWrapper<u8>, i: &mut u32) -> u16 {
 #[inline(always)]
 unsafe fn parse_color(bytes: &[u8]) -> (u16, u16) {
     let bytes = SliceWrapper::new(bytes);
-    let color = u32::from_le_bytes(<[u8; 4]>::try_from(&bytes[0..4usize]).unwrap_ok_unchecked());
+    let color = u32::from_le_bytes(<[u8; 4]>::try_from(&bytes[0..4usize]).unwrap_unchecked());
     let index = color % 215;
     let val = SliceWrapper::new(&COLOR_TABLE)[index];
     debug_assert!(val != (0, 0), "Invalid color");

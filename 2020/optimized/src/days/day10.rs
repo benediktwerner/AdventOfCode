@@ -51,16 +51,16 @@ impl crate::Solver for Solver {
         while i < bytes.len() {
             let mut num = (bytes[i] - b'0') as u32;
 
-            if bytes[i + 1] != b'\n' {
+            if bytes[i + 1] == b'\n' {
+                i += 2;
+            } else {
                 num = num * 10 + (bytes[i + 1] - b'0') as u32;
-                if bytes[i + 2] != b'\n' {
+                if bytes[i + 2] == b'\n' {
+                    i += 3;
+                } else {
                     num = num * 10 + (bytes[i + 2] - b'0') as u32;
                     i += 4;
-                } else {
-                    i += 3;
                 }
-            } else {
-                i += 2;
             }
 
             numbers_present[num as usize] = true;

@@ -1,7 +1,5 @@
 use anyhow::{bail, ensure};
 
-use crate::unreachable::UncheckedOptionExt;
-
 pub struct Solver(());
 
 impl Solver {
@@ -43,15 +41,15 @@ impl crate::Solver for Solver {
     }
 
     unsafe fn solve(&self, input: &str) -> (String, String) {
+        const SLOPES: [(u32, u32); 5] = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
+        const PART1_SLOPE: (u32, u32) = (3, 1);
+
         let mut output = (0, 1);
 
         let bytes = input.as_bytes();
         let width = bytes.iter().position(|c| *c == b'\n').unwrap_unchecked() as u32;
         let length = bytes.len() as u32;
         let bytes = crate::SliceWrapper::new(bytes);
-
-        const SLOPES: [(u32, u32); 5] = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
-        const PART1_SLOPE: (u32, u32) = (3, 1);
 
         for &(dx, dy) in &SLOPES {
             let mut i: u32 = 0;

@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use anyhow::{ensure, Context};
 
 pub struct Solver(());
@@ -45,16 +47,18 @@ impl crate::Solver for Solver {
         }
 
         let mut nums_list = Vec::with_capacity(count);
-        nums_list.set_len(count);
-        let mut i = 0;
-        for (n, b) in nums.iter().enumerate() {
-            if *b {
-                *nums_list.get_unchecked_mut(i) = n as u32;
-                i += 1;
+        {
+            let nums_list = nums_list.spare_capacity_mut();
+            let mut i = 0;
+            for (n, b) in nums.iter().enumerate() {
+                if *b {
+                    *nums_list.get_unchecked_mut(i) = MaybeUninit::new(n as u32);
+                    i += 1;
+                }
             }
+            debug_assert!(i == count);
         }
-
-        debug_assert!(i == count);
+        nums_list.set_len(count);
 
         'outer: for (i, &a) in nums_list.iter().enumerate() {
             let opp = 2020 - a;

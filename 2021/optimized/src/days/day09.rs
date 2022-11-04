@@ -1,6 +1,6 @@
 use anyhow::{bail, ensure};
 
-use crate::{unreachable::UncheckedOptionExt, SliceWrapperMut};
+use crate::SliceWrapperMut;
 
 pub struct Solver(());
 
@@ -78,7 +78,13 @@ impl crate::Solver for Solver {
     }
 }
 
-unsafe fn dfs(inp: &mut [u8], width: usize, height: usize, (x, y): (usize, usize), min: &mut u8) -> u32 {
+unsafe fn dfs(
+    inp: &mut [u8],
+    width: usize,
+    height: usize,
+    (x, y): (usize, usize),
+    min: &mut u8,
+) -> u32 {
     let mut inp = SliceWrapperMut::new(inp);
     let mut size = 1;
     let width1 = width + 1;

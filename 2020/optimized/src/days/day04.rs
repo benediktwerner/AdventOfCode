@@ -125,10 +125,9 @@ impl crate::Solver for Solver {
                     }
                     if is_end {
                         return (output.0.to_string(), output.1.to_string());
-                    } else {
-                        i += 1;
-                        break;
                     }
+                    i += 1;
+                    break;
                 }
 
                 if !field_valid {
@@ -146,10 +145,9 @@ impl crate::Solver for Solver {
                             }
                             if is_end {
                                 return (output.0.to_string(), output.1.to_string());
-                            } else {
-                                i += 1;
-                                break;
                             }
+                            i += 1;
+                            break;
                         }
                     }
                     break;

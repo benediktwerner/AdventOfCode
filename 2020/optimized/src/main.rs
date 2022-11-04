@@ -1,10 +1,9 @@
-#![allow(unstable_name_collisions)]
+#![allow(clippy::inline_always)]
+#![allow(clippy::missing_errors_doc)]
 
 use std::{path::Path, time::Instant};
 
 use anyhow::{bail, ensure, Context};
-
-mod unreachable;
 
 mod days;
 mod slice_wrapper;
@@ -26,7 +25,7 @@ pub trait Solver {
     fn get_input(&self, directory: Option<&str>) -> anyhow::Result<String> {
         let path = input_path(self.day(), directory);
         let input_string = match std::fs::read_to_string(path) {
-            Ok(inp) => add_newline(inp.replace("\r", "")),
+            Ok(inp) => add_newline(inp.replace('\r', "")),
             Err(error) => {
                 bail!("Error while reading input file: {}", error);
             }
@@ -100,7 +99,7 @@ fn benchmark(
 }
 
 fn benchmark_all(
-    solvers: Vec<Box<dyn Solver>>,
+    solvers: &[Box<dyn Solver>],
     expected: &[(String, String)],
     iterations: Option<u64>,
     input_directory: Option<&str>,
@@ -119,7 +118,7 @@ fn benchmark_all(
     let mut nanos_sum = 0;
     let mut cycles_sum = 0;
 
-    for solver in &solvers {
+    for solver in solvers {
         let input = solver.get_input(input_directory)?;
         let mut out = Default::default();
 
@@ -196,17 +195,14 @@ fn parse_expected(path: impl AsRef<Path>) -> Option<Vec<(String, String)>> {
 
     for (i, line) in content.lines().enumerate() {
         let mut iter = line.split_whitespace();
-        match (iter.next(), iter.next()) {
-            (Some(a), Some(b)) => {
-                result.push((a.to_string(), b.to_string()));
-            }
-            _ => {
-                eprintln!(
-                    "Failed to parse {:?}:{}: Expected two space separated values\n",
-                    path, i
-                );
-                return None;
-            }
+        if let (Some(a), Some(b)) = (iter.next(), iter.next()) {
+            result.push((a.to_string(), b.to_string()));
+        } else {
+            eprintln!(
+                "Failed to parse {:?}:{}: Expected two space separated values\n",
+                path, i
+            );
+            return None;
         }
     }
     Some(result)
@@ -288,7 +284,7 @@ fn run() -> anyhow::Result<()> {
 
     let solvers = get_solvers();
     if args.is_present("all") {
-        benchmark_all(solvers, &expected, iterations, input_dir)
+        benchmark_all(&solvers, &expected, iterations, input_dir)
     } else if let Some(day) = args.value_of("day") {
         let day = day.parse::<usize>().context("Day is not a valid number")?;
         ensure!(

@@ -1,7 +1,5 @@
 use anyhow::{bail, ensure, Context};
 
-use crate::unreachable::debug_unreachable;
-
 pub struct Solver(());
 
 impl Solver {
@@ -55,7 +53,10 @@ impl crate::Solver for Solver {
                 b'f' => Instr::Forward,
                 b'd' => Instr::Down,
                 b'u' => Instr::Up,
-                _ => debug_unreachable(),
+                _ => {
+                    debug_assert!(false, "unreachable");
+                    std::hint::unreachable_unchecked();
+                }
             };
             i += instr.size() + 1;
             let mut num = (bytes[i] - b'0') as i32;
@@ -99,11 +100,10 @@ enum Instr {
 
 impl Instr {
     const fn size(self) -> usize {
-        use Instr::*;
         match self {
-            Forward => "forward".len(),
-            Up => "up".len(),
-            Down => "down".len(),
+            Instr::Forward => "forward".len(),
+            Instr::Up => "up".len(),
+            Instr::Down => "down".len(),
         }
     }
 }

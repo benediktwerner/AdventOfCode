@@ -3,10 +3,7 @@ use std::str::FromStr;
 use anyhow::{bail, ensure};
 use itertools::Itertools;
 
-use crate::{
-    unreachable::{UncheckedOptionExt, UncheckedResultExt},
-    SliceWrapperMut,
-};
+use crate::SliceWrapperMut;
 
 const SIZE: usize = 1024;
 
@@ -34,7 +31,7 @@ impl crate::Solver for Solver {
         for line in input.lines() {
             match line
                 .split(" -> ")
-                .flat_map(|p| p.split(',').map(usize::from_str).collect_tuple())
+                .filter_map(|p| p.split(',').map(usize::from_str).collect_tuple())
                 .collect_tuple()
             {
                 Some(((Ok(x1), Ok(y1)), (Ok(x2), Ok(y2)))) => {
@@ -61,7 +58,7 @@ impl crate::Solver for Solver {
                 .split(" -> ")
                 .map(|p| {
                     p.split(',')
-                        .map(|x| x.parse::<usize>().unwrap_ok_unchecked())
+                        .map(|x| x.parse::<usize>().unwrap_unchecked())
                         .collect_tuple()
                         .unwrap_unchecked()
                 })

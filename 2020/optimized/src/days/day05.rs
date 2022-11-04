@@ -102,7 +102,7 @@ unsafe fn parse2(ptr: *const u8) -> (u32, u32) {
         0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, //
     );
 
-    let mut ticket_bytes = _mm256_loadu_si256(ptr as *const __m256i);
+    let mut ticket_bytes = _mm256_loadu_si256(ptr.cast::<__m256i>());
     ticket_bytes = _mm256_shuffle_epi8(ticket_bytes, shuffle);
     ticket_bytes = _mm256_andnot_si256(ticket_bytes, mask);
     ticket_bytes = _mm256_slli_epi64(ticket_bytes, 5);
