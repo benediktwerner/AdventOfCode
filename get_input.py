@@ -8,6 +8,9 @@ from sys import argv
 
 BASE_DIR = os.path.dirname(__file__)
 URL = "https://adventofcode.com/{year}/day/{day}/input"
+HEADERS = {
+    "User-Agent": "https://github.com/benediktwerner/AdventOfCode/blob/master/get_input.py by 1benediktwerner@gmail.com"
+}
 
 
 def print_usage():
@@ -60,7 +63,7 @@ os.makedirs(dir_name, exist_ok=True)
 target_file = os.path.join(dir_name, "input.txt")
 
 url = URL.format(year=year, day=day)
-req = requests.get(url, cookies=cookies)
+req = requests.get(url, cookies=cookies, headers=HEADERS)
 
 if req.status_code != 200:
     print("Error. Got status:", req.status_code)
