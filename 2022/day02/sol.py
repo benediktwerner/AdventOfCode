@@ -4,7 +4,7 @@ from os import path
 
 
 def score(mine, theirs):
-    return [3, 6, 0][(mine - theirs) % 3] + mine + 1
+    return 3 * ((mine - theirs + 1) % 3) + mine + 1
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
