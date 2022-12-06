@@ -4,13 +4,9 @@ from os import path
 
 
 def solve(inp, count):
-    last = []
-    for i, c in enumerate(inp):
-        last.append(c)
-        if len(last) > count:
-            last.pop(0)
-        if len(set(last)) == count:
-            return i + 1
+    for i in range(count, len(inp)):
+        if len(set(inp[i - count : i])) == count:
+            return i
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as f:
