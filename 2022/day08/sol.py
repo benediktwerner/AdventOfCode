@@ -12,38 +12,19 @@ with open(path.join(path.dirname(__file__), "input.txt")) as f:
             score = 1
             visible = False
             c = grid[y][x]
-
-            for i in range(x + 1, len(grid[0])):
-                if grid[y][i] >= c:
-                    score *= i - x
-                    break
-            else:
-                score *= len(grid[0]) - 1 - x
-                visible = True
-
-            for i in range(x - 1, -1, -1):
-                if grid[y][i] >= c:
-                    score *= x - i
-                    break
-            else:
-                score *= x
-                visible = True
-
-            for i in range(y + 1, len(grid)):
-                if grid[i][x] >= c:
-                    score *= i - y
-                    break
-            else:
-                score *= len(grid) - 1 - y
-                visible = True
-
-            for i in range(y - 1, -1, -1):
-                if grid[i][x] >= c:
-                    score *= y - i
-                    break
-            else:
-                score *= y
-                visible = True
+            for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+                xx, yy = x, y
+                dist = 0
+                while True:
+                    xx += dx
+                    yy += dy
+                    if not (0 <= xx < len(grid[0]) and 0 <= yy < len(grid)):
+                        visible = True
+                        break
+                    dist += 1
+                    if grid[yy][xx] >= c:
+                        break
+                score *= dist
 
             max_score = max(max_score, score)
             if visible:
