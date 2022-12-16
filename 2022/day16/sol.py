@@ -3,61 +3,30 @@
 from os import path
 from collections import defaultdict
 from networkx import *
+import functools
 
 
-def do(pos1, pos2, min1, min2, graph, rates, visited, flow, minutes):
+@functools.cache
+def do(pos, visited, minutes, elephant):
     if minutes == 0:
-        return flow
+        if elephant:
+            return do("AA", visited, 26, False)
+        return 0
 
-    if min1 > 0 and min2 > 0:
-        return do(
-            pos1, pos2, min1 - 1, min2 - 1, graph, rates, visited, flow, minutes - 1
+    best = 0
+    found = False
+    for to, dist in graph[pos]:
+        if dist >= minutes or to in visited:
+            continue
+        found = True
+        result = do(to, visited | {to}, minutes - dist, elephant) + rates[to] * (
+            minutes - dist
         )
+        if result > best:
+            best = result
 
-    best = flow
-    if min1 == 0:
-        found = False
-        for to, dist in graph[pos1]:
-            if dist >= minutes or to in visited:
-                continue
-            found = True
-            visited.add(to)
-            result = do(
-                to,
-                pos2,
-                dist,
-                min2,
-                graph,
-                rates,
-                visited,
-                flow + rates[to] * (minutes - dist),
-                minutes,
-            )
-            visited.remove(to)
-            if result > best:
-                best = result
-        if found:
-            return best
-
-    if min2 == 0:
-        for to, dist in graph[pos2]:
-            if dist >= minutes or to in visited:
-                continue
-            visited.add(to)
-            result = do(
-                pos1,
-                to,
-                min1,
-                dist,
-                graph,
-                rates,
-                visited,
-                flow + rates[to] * (minutes - dist),
-                minutes,
-            )
-            visited.remove(to)
-            if result > best:
-                best = result
+    if not found and elephant:
+        return do("AA", visited, 26, False)
 
     return best
 
@@ -80,8 +49,5 @@ with open(path.join(path.dirname(__file__), "input.txt")) as f:
         for to in rates:
             graph[fro].append((to, shortest_path_length(G, fro, to) + 1))
 
-    print("Part 1:", do("AA", "AA", 0, 100, graph, rates, set(["AA"]), 0, 30))
-    print(
-        "This will take a while. Print graph, paste it into the code, comment out networkx, and run with pypy for speedup."
-    )
-    print("Part 2:", do("AA", "AA", 0, 0, graph, rates, set(["AA"]), 0, 26))
+    print("Part 1:", do("AA", frozenset(["AA"]), 30, False))
+    print("Part 2:", do("AA", frozenset(["AA"]), 26, True))
