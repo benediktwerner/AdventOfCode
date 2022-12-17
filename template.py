@@ -4,6 +4,7 @@ from os import path
 from collections import *
 from networkx import *
 from copy import deepcopy
+from tqdm import tqdm
 import itertools
 import math
 import re
