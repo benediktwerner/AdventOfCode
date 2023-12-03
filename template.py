@@ -11,11 +11,11 @@ import re
 import pyperclip
 
 
-def ints(string):
+def ints(string) -> list[int]:
     return list(map(int, re.findall(r"-?[0-9]+", string)))
 
 
-def solve(inp):
+def solve(inp: str):
     for line in inp.splitlines():
         pass
 
