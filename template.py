@@ -16,7 +16,8 @@ def ints(string) -> list[int]:
 
 
 def solve(inp: str):
-    for line in inp.splitlines():
+    lines = inp.splitlines()
+    for line in lines:
         pass
 
 
