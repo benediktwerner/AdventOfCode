@@ -16,9 +16,11 @@ def ints(string) -> list[int]:
 
 
 def solve(inp: str):
+    result = 0
     lines = inp.splitlines()
     for line in lines:
         pass
+    return result
 
 
 example = """\
