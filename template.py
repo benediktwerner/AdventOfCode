@@ -2,7 +2,7 @@
 
 from os import path
 from collections import *
-from networkx import *
+# from networkx import *
 from copy import deepcopy
 from tqdm import tqdm
 import itertools
@@ -32,8 +32,8 @@ if example and not example.isspace():
 else:
     print("No example provided")
 
-with open(path.join(path.dirname(__file__), "input.txt")) as f:
-    result = solve(f.read())
+with open(path.join(path.dirname(__file__), "input.txt")) as file:
+    result = solve(file.read())
     print("Output:", result)
     pyperclip.copy(str(result))
     print("Copied to clipboard")
