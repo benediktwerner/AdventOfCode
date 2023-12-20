@@ -1,0 +1,118 @@
+digraph G {
+    hs [label="%hs"]
+    dg [label="&dg"]
+    vp [label="%vp"]
+    kz [label="%kz"]
+    nv [label="%nv"]
+    hx [label="%hx"]
+    mm [label="%mm"]
+    fd [label="%fd"]
+    dv [label="&dv"]
+    hg [label="%hg"]
+    td [label="%td"]
+    bl [label="%bl"]
+    br [label="%br"]
+    qh [label="%qh"]
+    xq [label="&xq"]
+    sg [label="%sg"]
+    dm [label="%dm"]
+    gt [label="%gt"]
+    ln [label="%ln"]
+    mc [label="%mc"]
+    tx [label="%tx"]
+    lk [label="&lk"]
+    mg [label="%mg"]
+    vv [label="&vv"]
+    nt [label="%nt"]
+    zv [label="&zv"]
+    cd [label="%cd"]
+    rc [label="%rc"]
+    nj [label="%nj"]
+    gf [label="%gf"]
+    rm [label="%rm"]
+    xx [label="%xx"]
+    jt [label="%jt"]
+    zl [label="%zl"]
+    sp [label="&sp"]
+    xc [label="%xc"]
+    xt [label="&xt"]
+    tp [label="%tp"]
+    lc [label="%lc"]
+    vh [label="%vh"]
+    mq [label="%mq"]
+    cc [label="%cc"]
+    vn [label="%vn"]
+    tr [label="%tr"]
+    hl [label="%hl"]
+    dc [label="%dc"]
+    jq [label="%jq"]
+    kx [label="%kx"]
+    cx [label="%cx"]
+    sl [label="%sl"]
+    cz [label="%cz"]
+    qb [label="%qb"]
+    jc [label="&jc"]
+    xv [label="%xv"]
+    pt [label="%pt"]
+    rv [label="%rv"]
+    ps [label="%ps"]
+
+    hs -> sl
+    dg -> rx
+    vp -> fd, dv
+    kz -> jc, mc
+    nv -> dv
+    hx -> gf
+    mm -> vh
+    fd -> td
+    dv -> hx, bl, rc, fd, xt
+    hg -> xq
+    td -> dv, hx
+    bl -> jt
+    br -> jq
+    qh -> ln
+    xq -> zl, cx, qh, hs, nt, sp
+    sg -> vv, tr
+    dm -> bl, dv
+    gt -> xq, hg
+    ln -> mq, xq
+    mc -> xv, jc
+    tx -> rv, jc
+    lk -> dg
+    mg -> hl, jc
+    vv -> zv, br, kx, mm, tr
+    nt -> xq, cx
+    zv -> dg
+    cd -> jc, ps
+    rc -> rm, dv
+    nj -> pt, xq
+    broadcaster -> nt, kx, rc, mg
+    gf -> dc, dv
+    rm -> dm, dv
+    xx -> vv, cz
+    jt -> dv, vp
+    zl -> nj
+    sp -> dg
+    xc -> jc, kz
+    xt -> dg
+    tp -> jc
+    lc -> vv, vn
+    vh -> xx, vv
+    mq -> hs, xq
+    cc -> vv
+    vn -> vv, cc
+    tr -> br
+    hl -> qb, jc
+    dc -> dv, nv
+    jq -> mm, vv
+    kx -> vv, sg
+    cx -> qh
+    sl -> zl, xq
+    cz -> lc, vv
+    qb -> jc, cd
+    jc -> ps, xv, lk, mg
+    xv -> tx
+    pt -> xq, gt
+    rv -> jc, tp
+    ps -> xc    
+}
