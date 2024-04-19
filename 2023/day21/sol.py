@@ -1,40 +1,63 @@
 #!/usr/bin/env python3
 
-from collections import defaultdict
+from collections import deque
 from os import path
 
+# Part 2 based on https://github.com/villuna/aoc23/wiki/A-Geometric-solution-to-advent-of-code-2023,-day-21
 
-def solve(inp: str):
-    grid = inp.splitlines()
+with open(path.join(path.dirname(__file__), "input.txt")) as file:
+    grid = file.read().splitlines()
     width, height = len(grid[0]), len(grid)
-    pos = defaultdict(set)
+    todo = deque([])
+    visited = set()
+    part1 = 1
+    even_corners = 0
+    odd_corners = 0
+    even_full = 1
+    odd_full = 0
+
     for y, line in enumerate(grid):
         for x, c in enumerate(line):
             if c == "S":
-                pos[x, y].add((0, 0))
-    for _ in range(26501365):
-        if _ % 1_000 == 0:
-            print(_, len(pos))
-        new_pos = defaultdict(set)
-        for (x, y), areas in pos.items():
-            for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
-                nx = (x + dx) % width
-                ny = (y + dy) % height
-                if grid[ny][nx] != "#":
-                    new_pos[nx, ny] = areas
-        pos = new_pos
-    return len(pos)
+                todo.append((x, y, 0))
+                visited.add((x, y))
 
+    while todo:
+        x, y, d = todo.popleft()
+        d += 1
+        for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            nx, ny = x + dx, y + dy
+            if (
+                (nx, ny) in visited
+                or nx < 0
+                or ny < 0
+                or nx >= width
+                or ny >= height
+                or grid[ny][nx] != "."
+            ):
+                continue
+            visited.add((nx, ny))
+            todo.append((nx, ny, d))
 
-example = """\
+            if d <= 64 and d % 2 == 0:
+                part1 += 1
 
-"""
+            if d % 2 == 0:
+                even_full += 1
+                if abs(nx - 65) + abs(ny - 65) > 65:
+                    even_corners += 1
+            else:
+                odd_full += 1
+                if abs(nx - 65) + abs(ny - 65) > 65:
+                    odd_corners += 1
 
-if example and not example.isspace():
-    print("Example:", solve(example))
-else:
-    print("No example provided")
+    n = 202300
 
-with open(path.join(path.dirname(__file__), "input.txt")) as file:
-    result = solve(file.read())
-    print("Output:", result)
+    print("Part 1:", part1)
+    print(
+        "Part 2:",
+        ((n + 1) * (n + 1)) * odd_full
+        + (n * n) * even_full
+        - (n + 1) * odd_corners
+        + n * even_corners,
+    )
