@@ -1,35 +1,28 @@
 #!/usr/bin/env python3
 
 from os import path
-from typing import Sequence
-
-
-def is_ordered(update: Sequence[str]) -> bool:
-    for i, a in enumerate(update[:-1]):
-        for b in update[i + 1 :]:
-            if (a, b) not in orderings:
-                return False
-    return True
+from functools import cmp_to_key
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as file:
     orderings, updates = map(str.splitlines, file.read().split("\n\n"))
-    orderings = {tuple(line.split("|")) for line in orderings}
+    orderings = {tuple(map(int, line.split("|"))) for line in orderings}
+
+    def compare(a: int, b: int) -> int:
+        if (a, b) in orderings:
+            return -1
+        return 1
 
     part1 = part2 = 0
 
     for update in updates:
-        update = update.split(",")
-        if is_ordered(update):
-            part1 += int(update[len(update) // 2])
-            continue
-
-        half = len(update) // 2
-        for a in update:
-            count_after = sum((a, b) in orderings for b in update if b != a)
-            if count_after == half:
-                part2 += int(a)
-                break
+        update = list(map(int, update.split(",")))
+        update_sorted = sorted(update, key=cmp_to_key(compare))
+        middle = update_sorted[len(update_sorted) // 2]
+        if update == update_sorted:
+            part1 += middle
+        else:
+            part2 += middle
 
     print("Part 1:", part1)
     print("Part 2:", part2)
