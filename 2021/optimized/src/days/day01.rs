@@ -27,7 +27,7 @@ impl crate::Solver for Solver {
         for line in input.lines() {
             count += 1;
             line.parse::<u32>()
-                .with_context(|| format!("Failed to convert '{}' to int", line))?;
+                .with_context(|| format!("Failed to convert '{line}' to int"))?;
         }
         ensure!(count >= 4, "Fewer than 4 numbers");
         Ok(())

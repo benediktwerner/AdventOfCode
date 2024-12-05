@@ -1,15 +1,18 @@
 #![allow(clippy::inline_always)]
 #![allow(clippy::missing_errors_doc)]
 
-use std::{path::Path, time::Instant};
+use std::{ops::Deref, path::Path, time::Instant};
 
-use anyhow::{bail, ensure, Context};
+use anyhow::{bail, ensure};
 
 mod days;
 mod slice_wrapper;
 mod utils;
 
-use clap::{App, Arg};
+use clap::{
+    builder::{NonEmptyStringValueParser, RangedU64ValueParser},
+    Arg, ArgAction, Command,
+};
 use days::get_solvers;
 pub use slice_wrapper::*;
 
@@ -40,10 +43,10 @@ pub trait Solver {
 
 fn input_path(day: u8, directory: Option<&str>) -> std::path::PathBuf {
     if let Some(dir) = directory {
-        Path::new(dir).join(format!("day{:02}.txt", day))
+        Path::new(dir).join(format!("day{day:02}.txt"))
     } else {
         Path::new("..")
-            .join(format!("day{:02}", day))
+            .join(format!("day{day:02}"))
             .join("input.txt")
     }
 }
@@ -64,7 +67,7 @@ fn benchmark(
     let iterations = iterations.unwrap_or(DEFAULT_ITERATIONS);
 
     println!("Benchmarking day {}", solver.day());
-    println!("{} iteration(s)", iterations);
+    println!("{iterations} iteration(s)");
     if expected.is_none() {
         println!("Not checking results");
     }
@@ -74,10 +77,12 @@ fn benchmark(
     let mut out = Default::default();
 
     let start = Instant::now();
+    #[cfg(target_arch = "x86_64")]
     let startc = unsafe { std::arch::x86_64::_rdtsc() };
     for _ in 0..iterations {
         out = unsafe { solver.solve(inp) };
     }
+    #[cfg(target_arch = "x86_64")]
     let endc = unsafe { std::arch::x86_64::_rdtsc() };
     let duration = start.elapsed();
 
@@ -92,8 +97,9 @@ fn benchmark(
 
     let (nanos, time) = utils::format_duration(duration.as_nanos() / iterations as u128);
 
-    println!("Cylcles: {}", (endc - startc) / iterations);
-    println!("Time: {} = {}", nanos, time);
+    #[cfg(target_arch = "x86_64")]
+    println!("Cycles: {}", (endc - startc) / iterations);
+    println!("Time: {nanos} = {time}");
 
     Ok(())
 }
@@ -107,7 +113,7 @@ fn benchmark_all(
     let iterations = iterations.unwrap_or(DEFAULT_ITERATIONS);
 
     println!("\nBenchmarking all days");
-    println!("{} iterations each", iterations);
+    println!("{iterations} iterations each");
     println!();
     println!(
         "Day      {: >16}{: >16}{: >16}{: >16}{: >16}\n",
@@ -123,16 +129,21 @@ fn benchmark_all(
         let mut out = Default::default();
 
         let start = Instant::now();
+        #[cfg(target_arch = "x86_64")]
         let startc = unsafe { std::arch::x86_64::_rdtsc() };
         for _ in 0..iterations {
             out = unsafe { solver.solve(&input) };
         }
+        #[cfg(target_arch = "x86_64")]
         let endc = unsafe { std::arch::x86_64::_rdtsc() };
         let duration = start.elapsed();
 
         let nanos = duration.as_nanos() / iterations as u128;
         let time = utils::format_duration(nanos);
+        #[cfg(target_arch = "x86_64")]
         let cycles = (endc - startc) / iterations;
+        #[cfg(not(target_arch = "x86_64"))]
+        let cycles = 0;
 
         println!(
             "Day {:02}   {: >16}{: >16}{: >16}{: >16}{: >16}",
@@ -146,10 +157,7 @@ fn benchmark_all(
 
         if let Some(expected) = expected.get(solver.day() as usize - 1) {
             if out != *expected {
-                println!(
-                    "       => Wrong result: {:?} vs {:?} (expected)",
-                    out, expected
-                );
+                println!("       => Wrong result: {out:?} vs {expected:?} (expected)");
             }
         }
 
@@ -176,7 +184,7 @@ fn benchmark_all(
 
     let nanos = duration.as_nanos() / iterations as u128;
     let (nanos, time) = utils::format_duration(nanos);
-    println!("\nEverything together: {} = {}\n", nanos, time);
+    println!("\nEverything together: {nanos} = {time}\n");
 
     Ok(())
 }
@@ -188,7 +196,7 @@ fn parse_expected(path: impl AsRef<Path>) -> Option<Vec<(String, String)>> {
     let content = match std::fs::read_to_string(path) {
         Ok(x) => x,
         Err(error) => {
-            eprintln!("Failed to read {:?}: {}", path, error);
+            eprintln!("Failed to read {path:?}: {error}");
             return None;
         }
     };
@@ -198,10 +206,7 @@ fn parse_expected(path: impl AsRef<Path>) -> Option<Vec<(String, String)>> {
         if let (Some(a), Some(b)) = (iter.next(), iter.next()) {
             result.push((a.to_string(), b.to_string()));
         } else {
-            eprintln!(
-                "Failed to parse {:?}:{}: Expected two space separated values\n",
-                path, i
-            );
+            eprintln!("Failed to parse {path:?}:{i}: Expected two space separated values\n");
             return None;
         }
     }
@@ -224,69 +229,72 @@ fn get_expected(dir: Option<&str>, path: &str) -> Option<Vec<(String, String)>> 
 }
 
 fn run() -> anyhow::Result<()> {
-    let args = App::new("aoc-optimized")
-        .arg(Arg::with_name("all").long("all").short("a").help("Benchmark all days"))
+    let solvers = get_solvers();
+
+    let args = Command::new("aoc-optimized")
         .arg(
-            Arg::with_name("iterations")
-                .long("iterations")
-                .alias("iters")
-                .short("i")
-                .takes_value(true)
-                .help("Number of iterations between timings")
+            Arg::new("all")
+                .long("all")
+                .short('a')
+                .action(ArgAction::SetTrue)
+                .help("Benchmark all days"),
         )
         .arg(
-            Arg::with_name("day")
+            Arg::new("iterations")
+                .long("iterations")
+                .alias("iters")
+                .short('i')
+                .value_parser(RangedU64ValueParser::<u64>::new())
+                .help("Number of iterations between timings"),
+        )
+        .arg(
+            Arg::new("day")
                 .long("day")
-                .short("d")
-                .takes_value(true)
+                .short('d')
+                .value_parser(RangedU64ValueParser::<usize>::from(
+                    1..=solvers.len() as u64,
+                ))
                 .help("Benchmark a single day"),
         )
         .arg(
-            Arg::with_name("no-check")
+            Arg::new("no-check")
                 .long("no-check")
+                .action(ArgAction::SetTrue)
                 .help("Don't check if results are correct"),
         )
         .arg(
-            Arg::with_name("input-directory")
+            Arg::new("input-directory")
                 .long("input-directory")
                 .alias("input-dir")
-                .takes_value(true)
+                .value_parser(NonEmptyStringValueParser::new())
                 .value_name("DIR")
                 .help("Directory for inputs. Inputs are expected as dayXX.txt. Expected output can optionally be provided in `expected.txt` or using --expected-file"),
         )
         .arg(
-            Arg::with_name("expected-file")
+            Arg::new("expected-file")
                 .long("expected-file")
-                .takes_value(true)
+                .value_parser(NonEmptyStringValueParser::new())
                 .value_name("FILE")
                 .help("File for expected inputs. Defaults to expected.txt"),
         )
         .get_matches();
 
-    let input_dir = args.value_of("input-directory");
-    let expected_file = args.value_of("expected-file").unwrap_or("expected.txt");
+    let input_dir = args.get_one::<String>("input-directory").map(Deref::deref);
+    let expected_file = args
+        .get_one::<String>("expected-file")
+        .map_or("expected.txt", Deref::deref);
 
-    let expected = if args.is_present("no-check") {
+    let expected = if args.get_flag("no-check") {
         Vec::new()
     } else {
         get_expected(input_dir, expected_file).unwrap_or_default()
     };
 
-    let iterations = if let Some(iters) = args.value_of("iterations") {
-        Some(
-            iters
-                .parse::<u64>()
-                .context("Iterations count is not a valid number")?,
-        )
-    } else {
-        None
-    };
+    let iterations = args.get_one::<u64>("iterations").copied();
 
-    let solvers = get_solvers();
-    if args.is_present("all") {
+    if args.get_flag("all") {
         benchmark_all(&solvers, &expected, iterations, input_dir)
-    } else if let Some(day) = args.value_of("day") {
-        let day = day.parse::<usize>().context("Day is not a valid number")?;
+    } else if let Some(day) = args.get_one::<usize>("day").copied() {
         ensure!(
             1 <= day && day <= solvers.len(),
             "Day out of range. It must be between 1 and {}.",
@@ -311,6 +319,6 @@ fn run() -> anyhow::Result<()> {
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("{}", error);
+        eprintln!("{error}");
     }
 }

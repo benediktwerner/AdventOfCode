@@ -50,7 +50,7 @@ pub struct SliceWrapper<'a, T>(pub &'a [T]);
 
 impl<'a, T> Clone for SliceWrapper<'a, T> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
 impl<'a, T> Copy for SliceWrapper<'a, T> {}

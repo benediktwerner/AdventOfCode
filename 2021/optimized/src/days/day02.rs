@@ -31,7 +31,7 @@ impl crate::Solver for Solver {
                         parts[0]
                     );
                     n.parse::<u32>()
-                        .with_context(|| format!("Failed to convert '{}' to int", line))?;
+                        .with_context(|| format!("Failed to convert '{line}' to int"))?;
                 }
                 _ => bail!("Invalid line: '{}'", line),
             }
