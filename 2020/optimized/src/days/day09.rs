@@ -118,7 +118,7 @@ fn parse_number(bytes: SliceWrapper<u8>, i: &mut usize) -> u64 {
 unsafe fn check_last_25(numbers: &[u64], last25: &FxHashSet<u64>, i: usize, num: u64) -> bool {
     let numbers = SliceWrapper::new(numbers);
     for j in i - 25..i {
-        let needed = num - numbers[j];
+        let needed = num.wrapping_sub(numbers[j]);
         if last25.contains(&needed) {
             return false;
         }

@@ -22,7 +22,7 @@ impl crate::Solver for Solver {
         for line in input.lines() {
             let number = line
                 .parse::<u32>()
-                .with_context(|| format!("Failed to convert {} to int", line))?;
+                .with_context(|| format!("Failed to convert {line} to int"))?;
             ensure!(number < 2020, "Number is bigger than 2020: {}", line);
         }
         ensure!(input.lines().count() <= 200, "Input longer than 200 lines");

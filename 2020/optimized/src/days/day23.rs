@@ -20,7 +20,7 @@ impl crate::Solver for Solver {
     fn is_input_safe(&self, input: &str) -> anyhow::Result<()> {
         ensure!(
             input.len() == 10,
-            "Input has wrong length. (shuld be 10 characters including newline)"
+            "Input has wrong length. (should be 10 characters including newline)"
         );
         ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         ensure!(

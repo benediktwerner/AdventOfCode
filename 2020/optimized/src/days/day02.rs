@@ -28,10 +28,10 @@ impl crate::Solver for Solver {
             );
             let low = lowhigh[0]
                 .parse::<u32>()
-                .with_context(|| format!("Failed to convert low to int: {}", line))?;
+                .with_context(|| format!("Failed to convert low to int: {line}"))?;
             let high = lowhigh[1]
                 .parse::<u32>()
-                .with_context(|| format!("Failed to convert high to int: {}", line))?;
+                .with_context(|| format!("Failed to convert high to int: {line}"))?;
 
             ensure!(low > 0, "Low is 0: {}", line);
             ensure!(low < high, "Low not less than high: {}", line);

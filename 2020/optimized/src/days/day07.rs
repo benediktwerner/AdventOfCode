@@ -40,7 +40,7 @@ impl crate::Solver for Solver {
             ensure!(iter.next().is_none(), "Too many values: {}", line);
             match parts {
                 (Some(bag), Some(contains)) => {
-                    validata_bag(bag)?;
+                    validate_bag(bag)?;
                     ensure!(
                         &contains[contains.len() - 1..] == ".",
                         "Line does not end with a dot: '{}'",
@@ -84,7 +84,7 @@ impl crate::Solver for Solver {
                             );
                             4
                         };
-                        validata_bag(&contained_bag[2..contained_bag.len() - cutoff])?;
+                        validate_bag(&contained_bag[2..contained_bag.len() - cutoff])?;
                     }
                 }
                 _ => bail!("Invalid line: {}", line),
@@ -256,7 +256,7 @@ unsafe fn parse_attribute(bytes: &[u8]) -> (u16, u16) {
     val
 }
 
-fn validata_bag(bag: &str) -> anyhow::Result<()> {
+fn validate_bag(bag: &str) -> anyhow::Result<()> {
     let mut iter = bag.split(' ');
     let parts = (iter.next(), iter.next());
     ensure!(iter.next().is_none(), "Too many values for bag: {}", bag);

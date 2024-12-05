@@ -10,9 +10,9 @@ codegen-units = 1
 panic = "abort"
 
 [dependencies]
-anyhow = "1.0"
-clap = "2"
-rustc-hash = "1.1"
+anyhow = "1"
+clap = "4"
+rustc-hash = "2"
 # regex = "*"
 # libc = "0.2"
 

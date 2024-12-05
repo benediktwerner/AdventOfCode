@@ -23,9 +23,8 @@ impl crate::Solver for Solver {
         );
         ensure!(input.is_ascii(), "Input contains non-ASCII characters");
         let mut lines = input.lines();
-        let first = match lines.next() {
-            Some(line) => line,
-            None => bail!("Input has no lines"),
+        let Some(first) = lines.next() else {
+            bail!("Input has no lines")
         };
         let length = first.len();
         ensure!(length > 0, "First line is empty");

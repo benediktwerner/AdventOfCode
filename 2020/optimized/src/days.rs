@@ -64,6 +64,6 @@ impl Solver for Unsolved {
     }
 
     unsafe fn solve(&self, _input: &str) -> (String, String) {
-        ("".to_string(), "".to_string())
+        (String::new(), String::new())
     }
 }

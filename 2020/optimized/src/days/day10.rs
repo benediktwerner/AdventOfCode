@@ -99,7 +99,7 @@ impl crate::Solver for Solver {
         }
         arrangements[2] = MaybeUninit::new(curr);
 
-        for i in 1..len {
+        for i in 3..len {
             check_ones_threes(numbers[i] - numbers[i - 1], &mut ones, &mut threes);
 
             if numbers[i] - numbers[i - 2] <= 3 {
