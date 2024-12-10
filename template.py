@@ -1,14 +1,29 @@
 #!/usr/bin/env python3
 
-from os import path
-from collections import *
-# from networkx import *
-from copy import deepcopy
-from tqdm import tqdm
 import itertools
 import math
+import operator
 import re
+from collections import Counter, defaultdict, deque
+from copy import deepcopy
+from functools import cache
+from os import path
+
 import pyperclip
+from tqdm import tqdm
+
+# from networkx import *
+
+
+RIGHT, DOWN, LEFT, UP = range(4)
+DIRS1 = ((0, 1), (0, -1), (1, 0), (-1, 0))
+DIRS2 = DIRS1 + ((1, 1), (1, -1), (-1, 1), (-1, -1))
+DIRS = {
+    RIGHT: (1, 0),
+    DOWN: (0, 1),
+    LEFT: (-1, 0),
+    UP: (1, 0),
+}
 
 
 def ints(string) -> list[int]:
@@ -18,8 +33,24 @@ def ints(string) -> list[int]:
 def solve(inp: str):
     result = 0
     lines = inp.splitlines()
+    width, height = len(lines[0]), len(lines)
+
+    def ok(x, y=None):
+        if y is None:
+            x, y = x
+        return 0 <= x < width and 0 <= y < height
+
+    def neighbors(x, y=None):
+        if y is None:
+            x, y = x
+        for dx, dy in DIRS1:
+            nx, ny = x + dx, y + dy
+            if ok(nx, ny):
+                yield nx, ny
+
     for line in lines:
         pass
+
     return result
 
 
