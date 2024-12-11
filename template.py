@@ -48,6 +48,10 @@ def solve(inp: str):
             if ok(nx, ny):
                 yield nx, ny
 
+    for y, line in enumerate(lines):
+        for x, c in enumerate(line):
+            pass
+
     for line in lines:
         pass
 
