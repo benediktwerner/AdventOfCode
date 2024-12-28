@@ -1,163 +1,109 @@
 #!/usr/bin/env python3
 
-import re
-from functools import cache
 from os import path
-
-OUT_BITS = 46
-
-
-def index(s: str) -> int:
-    return int(re.findall(r"\d+", s)[0])
+from z3 import *
 
 
-@cache
-def get_wire_state(wire: str) -> bool:
-    if wire in wire_states:
-        return wire_states[wire]
-
-    a, op, b = gates[wire]
-    a = get_wire_state(a)
-    b = get_wire_state(b)
-    match op:
-        case "AND":
-            return a & b
-        case "OR":
-            return a | b
-        case "XOR":
-            return a ^ b
-        case _:
-            assert False
-
-
-def is_processed(wire: str) -> bool:
-    return is_input(wire) or wire in renamed
+def get_var(name: str) -> BitVecRef:
+    if name.startswith("x"):
+        n = int(name[1:])
+        return Extract(n, n, x)
+    elif name.startswith("y"):
+        n = int(name[1:])
+        return Extract(n, n, y)
+    elif name.startswith("z"):
+        n = int(name[1:])
+        return Extract(n, n, z)
+    elif name in wires:
+        return wires[name]
+    else:
+        var = BitVec(name, 1)
+        wires[name] = var
+        return var
 
 
-def is_input(wire: str) -> bool:
-    return wire.startswith("x") or wire.startswith("y")
+def get_dependencies(wire: str) -> set[str]:
+    if wire.startswith("x") or wire.startswith("y"):
+        return set()
+    a, _, b = gates[wire]
+    return get_dependencies(a) | get_dependencies(b) | {wire}
+
+
+def setup_solver():
+    solver = Solver()
+    solver.add(ULT(x, 1 << (output_bits - 1)))
+    solver.add(ULT(y, 1 << (output_bits - 1)))
+    for out, (a, op, b) in gates.items():
+        a = get_var(a)
+        b = get_var(b)
+        out = get_var(out)
+        match op:
+            case "AND":
+                solver.add(a & b == out)
+            case "OR":
+                solver.add(a | b == out)
+            case "XOR":
+                solver.add(a ^ b == out)
+    return solver
 
 
 def swap(a, b):
     tmp = gates[a]
     gates[a] = gates[b]
     gates[b] = tmp
-    swapped_gates.extend((a, b))
+
+
+def determine_swap(i: int) -> tuple[str, str]:
+    good = get_dependencies(f"z{i - 1:02}")
+    bad = get_dependencies(f"z{i:02}") - good
+
+    for a in bad:
+        for b in set(gates) - good:
+            if b in bad and b <= a:
+                continue
+
+            swap(a, b)
+            solver = setup_solver()
+            solver.add(Extract(i, i, x + y) != Extract(i, i, z))
+            if solver.check() == unsat:
+                return a, b
+            swap(a, b)
+
+    assert False, f"failed to find swap to fix {i}"
 
 
 with open(path.join(path.dirname(__file__), "input.txt")) as file:
     init, connections = file.read().split("\n\n")
 
-    wire_states = {}
+    output_bits = 0
     gates = {}
-    swapped_gates = []
-
-    for line in init.splitlines():
-        wire, state = line.split(": ")
-        wire_states[wire] = bool(int(state))
 
     for line in connections.splitlines():
         a, op, b, _, out = line.split()
         a, b = sorted((a, b))
         gates[out] = (a, op, b)
+        if out.startswith("z"):
+            output_bits = max(output_bits, int(out[1:]) + 1)
 
-    result = 0
-    for i in range(OUT_BITS):
-        name = f"z{i:02}"
-        result |= get_wire_state(name) << i
-    print("Part 1:", result)
+    wires: dict[str, BitVecRef] = {}
+    x, y, z = BitVecs("x y z", output_bits)
 
-    swap("vmv", "z07")
-    swap("kfm", "z20")
-    swap("hnv", "z28")
-    swap("tqr", "hth")
+    solver = setup_solver()
 
-    print("Part 2:", ",".join(sorted(swapped_gates)))
+    for line in init.splitlines():
+        wire, state = line.split(": ")
+        solver.add(get_var(wire) == int(state))
 
-    renamed = {}
-    todo = set(gates)
-    for wire in tuple(todo):
-        if is_input(wire):
-            todo.remove(wire)
-        a, op, b = gates[wire]
-        if a == "x00" and b == "y00" and op == "AND":
-            renamed[wire] = "carry_00"
-            todo.remove(wire)
+    assert solver.check() == sat
 
-    changed = True
-    error = False
-    while changed and not error:
-        changed = False
-        for wire in tuple(todo):
-            a, op, b = gates[wire]
-            if not is_processed(a) or not is_processed(b):
-                continue
-            a = renamed.get(a, a)
-            b = renamed.get(b, b)
-            changed = True
-            todo.remove(wire)
-            if a.startswith("x") and b.startswith("y"):
-                if a[1:] == b[1:]:
-                    if op == "XOR":
-                        renamed[wire] = "direct_bit_" + a[1:]
-                        continue
-                    if op == "AND":
-                        renamed[wire] = "direct_carry_" + a[1:]
-                        continue
-            elif op == "AND" and (
-                (
-                    a.startswith("direct_bit_")
-                    and b.startswith("carry_")
-                    and index(a) == index(b) + 1
-                )
-                or (
-                    b.startswith("direct_bit_")
-                    and a.startswith("carry_")
-                    and index(b) == index(a) + 1
-                )
-            ):
-                n = max(index(a), index(b))
-                renamed[wire] = "indirect_carry_" + f"{n:02}"
-                continue
-            elif (
-                op == "OR"
-                and index(a) == index(b)
-                and (
-                    (a.startswith("direct_carry_") and b.startswith("indirect_carry_"))
-                    or (
-                        b.startswith("direct_carry_")
-                        and a.startswith("indirect_carry_")
-                    )
-                )
-            ):
-                renamed[wire] = f"carry_{index(a):02}"
-                continue
-            elif (
-                wire.startswith("z")
-                and op == "XOR"
-                and (
-                    (
-                        a.startswith("direct_bit_")
-                        and b.startswith("carry_")
-                        and index(wire) == index(a) == index(b) + 1
-                    )
-                    or (
-                        b.startswith("direct_bit_")
-                        and a.startswith("carry_")
-                        and index(wire) == index(b) == index(a) + 1
-                    )
-                )
-            ):
-                continue
+    print("Part 1:", solver.model()[z].as_long())
 
-            print(f"Error: {wire} = {renamed.get(a, a)} {op} {renamed.get(b, b)}")
+    swaps = []
 
-    lines = []
-    for wire, (a, op, b) in gates.items():
-        lines.append(
-            f"{renamed.get(wire, wire)} ({wire}) = {renamed.get(a, a)} {op} {renamed.get(b, b)}"
-        )
+    for i in range(output_bits):
+        solver = setup_solver()
+        solver.add(Extract(i, i, x + y) != Extract(i, i, z))
+        if solver.check() == sat:
+            swaps.extend(determine_swap(i))
 
-    with open("result.txt", "w") as of:
-        for line in sorted(lines):
-            print(line, file=of)
+    print("Part 2:", ",".join(sorted(swaps)))
